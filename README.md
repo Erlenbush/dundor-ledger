@@ -7,6 +7,19 @@ banked move, every wasted turn.
 Open `index.html` in a browser. Nothing to install, no network calls — the parser and
 all analytics run in the page.
 
+## Workflow
+
+Dundor only emits the verbose log on request, as an attached `.txt`:
+
+```
+dun fight            # play
+dun logs get 1       # Dundor attaches the log for the last fight
+```
+
+You do **not** have to alternate. Run a batch of fights, then collect the logs at the
+end (`dun logs get 1`, `2`, `3`, …) and drag all the `.txt` files onto the page at once.
+With more than one loaded you also get a **Session totals** panel and a fight switcher.
+
 ## What's in here
 
 | Part | Where | Notes |

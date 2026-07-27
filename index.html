@@ -493,6 +493,55 @@
   }
   .note b { color: var(--ink); }
 
+  /* ── ingest ────────────────────────────────────────────────── */
+  .dropzone {
+    padding: 26px 24px; display: flex; flex-direction: column; gap: 14px;
+    border-style: dashed; border-width: 1.5px; border-color: var(--rule);
+    transition: border-color .12s ease, background .12s ease;
+  }
+  .dropzone.over { border-color: var(--torch-fill); background: var(--torch-dim); }
+  .dropzone .lead { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; }
+  .dropzone .hint { font-size: 12.5px; color: var(--ink-2); max-width: 66ch; }
+  .dropzone .hint code {
+    font-size: 12px; padding: 1px 5px; background: var(--sunken);
+    border: 1px solid var(--rule); border-radius: 2px; color: var(--torch);
+  }
+  input[type="file"] { display: none; }
+  label.filebtn {
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    background: var(--torch-fill); color: #14140E;
+    border: 1px solid var(--torch-fill); border-radius: 3px;
+    padding: 9px 18px; cursor: pointer; display: inline-block;
+  }
+  label.filebtn:hover { filter: brightness(1.08); }
+  label.filebtn:focus-within { outline: 2px solid var(--ink); outline-offset: 2px; }
+
+  /* ── fight list ────────────────────────────────────────────── */
+  .fightlist { display: flex; flex-direction: column; }
+  button.frow {
+    font-family: var(--mono); text-align: left; cursor: pointer;
+    background: var(--panel); border: 0; border-bottom: 1px solid var(--rule-soft);
+    padding: 11px 18px; display: grid; gap: 4px 14px; align-items: center;
+    grid-template-columns: 18px 1fr auto auto; color: var(--ink); width: 100%;
+  }
+  button.frow:last-child { border-bottom: 0; }
+  button.frow:hover { background: var(--panel-2); }
+  button.frow[aria-current="true"] { background: var(--torch-dim); }
+  button.frow:focus-visible { outline: 2px solid var(--torch-fill); outline-offset: -2px; }
+  button.frow .idx { font-size: 11px; color: var(--ink-3); }
+  button.frow .nm { font-size: 13px; font-weight: 700; }
+  button.frow .nm .op { color: var(--s2); }
+  button.frow .det { font-size: 11.5px; color: var(--ink-2); white-space: nowrap; }
+  button.frow .res {
+    font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+    padding: 2px 8px; border-radius: 2px; border: 1px solid; white-space: nowrap;
+  }
+  button.frow .res.w { color: var(--good); background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+  button.frow .res.l { color: var(--crit); background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 40%, transparent); }
+  button.frow .res.e { color: var(--ink-3); background: var(--sunken); border-color: var(--rule); }
+  @media (max-width: 620px) { button.frow { grid-template-columns: 1fr auto; } button.frow .idx, button.frow .det { display: none; } }
+
   /* ── paste box ─────────────────────────────────────────────── */
   .pastewrap { padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
   textarea {
@@ -532,10 +581,48 @@
   <header class="masthead">
     <div class="brand">Dundor · Battle Ledger</div>
     <h1>Everything the fight summary threw away.</h1>
-    <p>A working parser prototype. It reads one raw Dundor combat log and reconstructs
-       the fight: every roll, every point of mitigation, every banked move, every
-       wasted turn. Paste your own log at the bottom.</p>
+    <p>Drop the <code style="font-size:12.5px">.txt</code> logs Dundor attaches and this reconstructs
+       each fight: every roll, every point of mitigation, every banked move, every wasted turn.
+       Load a whole session at once and it totals them up.</p>
   </header>
+
+  <section>
+    <p class="eyebrow">Load logs</p>
+    <div class="panel dropzone" id="drop">
+      <div class="lead">
+        <label class="filebtn" for="filePick">Choose log files
+          <input type="file" id="filePick" accept=".txt,text/plain" multiple>
+        </label>
+        <span class="hint">or drag the <code>.txt</code> files Dundor attaches straight onto this page — as many at once as you like.</span>
+      </div>
+      <p class="hint" style="margin:0">
+        Pull them in Discord with <code>dun logs get 1</code>. You don't have to do it after every
+        fight: run a batch of <code>dun fight</code>, then collect the logs at the end and drop
+        them all here together.
+      </p>
+      <details class="tableview" style="border-top-color:var(--rule)">
+        <summary>Paste raw text instead</summary>
+        <div class="pastewrap" style="padding:12px 0 0">
+          <textarea id="logInput" spellcheck="false" aria-label="Raw Dundor fight log"></textarea>
+          <div class="actions">
+            <button class="primary" id="parseBtn">Parse log</button>
+          </div>
+        </div>
+      </details>
+      <div class="actions"><span class="status" id="status"></span></div>
+    </div>
+  </section>
+
+  <section id="listSec" hidden>
+    <p class="eyebrow">Loaded fights</p>
+    <div class="panel fightlist" id="fightlist"></div>
+  </section>
+
+  <section id="sessionSec" hidden>
+    <p class="eyebrow">Across all loaded fights</p>
+    <h2 class="title">Session totals</h2>
+    <div class="tiles" id="sessionTiles"></div>
+  </section>
 
   <section id="fight"></section>
 
@@ -585,18 +672,6 @@
          risk to your account. Behind one interface, so a real sender drops in if Dundor ever
          ships an API.</p>
       <div class="deckgrid" id="deck"></div>
-    </div>
-  </section>
-
-  <section>
-    <p class="eyebrow">Try it</p>
-    <h2 class="title">Parse your own fight</h2>
-    <div class="panel pastewrap">
-      <textarea id="logInput" spellcheck="false" aria-label="Raw Dundor fight log"></textarea>
-      <div class="actions">
-        <button class="primary" id="parseBtn">Parse log</button>
-        <span class="status" id="status"></span>
-      </div>
     </div>
   </section>
 
@@ -683,7 +758,7 @@ function parseFight(text) {
     if (cursor) statBlocks.get(cursor).push(line);
   }
 
-  if (logStart < 0) throw new Error("No “Logs ---” section found. Paste the whole fight output, stats and all.");
+  if (logStart < 0) throw new Error("No “Logs ---” section — this isn't a Dundor fight log.");
 
   const entities = {};
   for (const [name, blk] of statBlocks) entities[name] = parseStatLines(blk);
@@ -1366,14 +1441,18 @@ function renderBlocks(f, A) {
 }
 
 const COMMANDS = [
-  { c: "dun fight",     d: "Explore and engage" },
-  { c: "dun pray",      d: "Offer to your god" },
-  { c: "dun stats",     d: "Your character sheet" },
-  { c: "dun inventory", d: "Carried items" },
-  { c: "dun rest",      d: "Recover HP and mana" },
-  { c: "dun skills",    d: "Skill training" },
-  { c: "dun equip",     d: "Change loadout" },
-  { c: "dun help",      d: "Full command list" },
+  { c: "dun fight",       d: "Explore and engage" },
+  { c: "dun logs get 1",  d: "Pull the last fight log" },
+  { c: "dun logs get 2",  d: "The one before that" },
+  { c: "dun logs get 3",  d: "Three fights back" },
+  { c: "dun pray",        d: "Offer to your god" },
+  { c: "dun rest",        d: "Recover HP and mana" },
+  { c: "dun stats",       d: "Your character sheet" },
+  { c: "dun inventory",   d: "Carried items" },
+  { c: "dun skills",      d: "Skill training" },
+  { c: "dun equip",       d: "Change loadout" },
+  { c: "dun logs",        d: "List stored logs" },
+  { c: "dun help",        d: "Full command list" },
 ];
 
 function renderDeck() {
@@ -1577,27 +1656,155 @@ TURN 17 ------------------------------------------------------------------------
 [Greater Lizard] dies!
 [food_] wins the fight because [Greater Lizard] has died!`;
 
-function run(text) {
-  const st = $("status");
-  try {
-    const f = parseFight(text);
-    const A = analyze(f);
-    renderFight(f, A);
-    renderTiles(f, A);
-    renderReads(f, A);
-    renderChart(f, A);
-    renderTurnLog(f, A);
-    renderBlocks(f, A);
-    st.className = "status";
-    st.textContent = `Parsed ${A.events} events across ${A.turnsSeen.length} turns.`;
-  } catch (err) {
-    st.className = "status err";
-    st.textContent = err.message;
-  }
+let FIGHTS = [];      // [{ label, f, A }] or [{ label, error }]
+let CURRENT = -1;
+
+function draw(i) {
+  const item = FIGHTS[i];
+  if (!item || item.error) return;
+  CURRENT = i;
+  const { f, A } = item;
+  renderFight(f, A);
+  renderTiles(f, A);
+  renderReads(f, A);
+  renderChart(f, A);
+  renderTurnLog(f, A);
+  renderBlocks(f, A);
+  renderFightList();
 }
 
+function renderFightList() {
+  const sec = $("listSec");
+  if (FIGHTS.length < 2) { sec.hidden = true; return; }
+  sec.hidden = false;
+  $("fightlist").innerHTML = FIGHTS.map((it, i) => {
+    if (it.error) {
+      return `<button class="frow" data-i="${i}" disabled aria-current="false">
+        <span class="idx">${i + 1}</span>
+        <span class="nm">${esc(it.label)}</span>
+        <span class="det">${esc(it.error)}</span>
+        <span class="res e">Skipped</span></button>`;
+    }
+    const won = it.f.outcome.winner === it.A.P;
+    return `<button class="frow" data-i="${i}" aria-current="${i === CURRENT}">
+      <span class="idx">${i + 1}</span>
+      <span class="nm">vs <span class="op">${esc(it.A.M)}</span></span>
+      <span class="det">${it.A.totalTurns} turns · ${it.A.s[it.A.P].dealt} dealt · ${it.A.mitP.taken} taken</span>
+      <span class="res ${won ? "w" : "l"}">${won ? "Win" : "Loss"}</span></button>`;
+  }).join("");
+}
+
+function renderSession() {
+  const sec = $("sessionSec");
+  const ok = FIGHTS.filter(x => !x.error);
+  if (ok.length < 2) { sec.hidden = true; return; }
+  sec.hidden = false;
+
+  const sum = (fn) => ok.reduce((n, x) => n + fn(x), 0);
+  const wins = ok.filter(x => x.f.outcome.winner === x.A.P).length;
+  const dealt = sum(x => x.A.s[x.A.P].dealt);
+  const taken = sum(x => x.A.mitP.taken);
+  const rawAt = sum(x => x.A.mitP.incomingRaw);
+  const turns = sum(x => x.A.totalTurns);
+  const approach = sum(x => x.A.approachTurns);
+  const stalls = sum(x => (x.A.idle[x.A.P] || []).length);
+  const overkill = sum(x => x.A.overkillOn === x.A.M ? x.A.overkill : 0);
+  const swings = sum(x => x.A.s[x.A.P].attacks);
+  const hits = sum(x => x.A.s[x.A.P].hits);
+
+  const tile = (k, v, sub, meterPct, meterColor) => `
+    <div class="tile">
+      <span class="k">${k}</span><span class="v">${v}</span>
+      ${sub ? `<span class="s">${sub}</span>` : ""}
+      ${meterPct != null ? `<span class="meter"><i style="width:${Math.max(0, Math.min(100, meterPct))}%;background:${meterColor}"></i></span>` : ""}
+    </div>`;
+
+  $("sessionTiles").innerHTML = [
+    tile("Fights", ok.length, `${wins} won · ${ok.length - wins} lost`, (wins / ok.length) * 100, "var(--good)"),
+    tile("Total dealt", dealt, `${Math.round(dealt / ok.length)} per fight`, null),
+    tile("Total taken", taken, rawAt ? `${pct((1 - taken / rawAt) * 100)} of ${rawAt} rolled was absorbed` : "", rawAt ? (1 - taken / rawAt) * 100 : 0, "var(--good)"),
+    tile("Hit rate", swings ? pct((hits / swings) * 100) : "—", `${hits} of ${swings} swings`, swings ? (hits / swings) * 100 : 0, "var(--s1)"),
+    tile("Turns spent", turns, `${Math.round(turns / ok.length)} per fight`, null),
+    tile("Spent walking", pct((approach / Math.max(1, turns)) * 100), `${approach} of ${turns} turns before contact`, (approach / Math.max(1, turns)) * 100, "var(--ink-3)"),
+    tile("Turns stalled", stalls, "attack speed exceeded moves banked", (stalls / Math.max(1, turns)) * 100, "var(--warn)"),
+    tile("Overkill", overkill, dealt ? `${pct((overkill / dealt) * 100)} of output wasted` : "", (overkill / Math.max(1, dealt)) * 100, "var(--warn)"),
+  ].join("");
+}
+
+function load(items) {   // items: [{ label, text }]
+  const st = $("status");
+  const parsed = items.map(it => {
+    try {
+      const f = parseFight(it.text);
+      return { label: it.label, f, A: analyze(f) };
+    } catch (err) {
+      return { label: it.label, error: err.message };
+    }
+  });
+
+  const ok = parsed.filter(x => !x.error);
+  const bad = parsed.length - ok.length;
+
+  // Nothing usable — say so, but leave whatever is already on screen alone.
+  if (!ok.length) {
+    st.className = "status err";
+    st.textContent = parsed.length === 1
+      ? parsed[0].error
+      : `None of those ${parsed.length} files are Dundor fight logs.`;
+    return;
+  }
+
+  FIGHTS = parsed;
+  renderSession();
+  draw(FIGHTS.indexOf(ok[0]));
+  st.className = "status";
+  const events = ok.reduce((n, x) => n + x.A.events, 0);
+  st.textContent = ok.length === 1
+    ? `Parsed ${ok[0].A.events} events across ${ok[0].A.turnsSeen.length} turns.`
+    : `Parsed ${ok.length} fights — ${events} events total.${bad ? ` ${bad} file${bad === 1 ? "" : "s"} skipped.` : ""}`;
+}
+
+$("fightlist").addEventListener("click", (e) => {
+  const row = e.target.closest("button.frow");
+  if (row && !row.disabled) draw(+row.dataset.i);
+});
+
+async function readFiles(fileList) {
+  const files = [...fileList].filter(f => !f.type || /text|plain/.test(f.type) || /\.txt$/i.test(f.name));
+  if (!files.length) {
+    const st = $("status");
+    st.className = "status err";
+    st.textContent = "Those aren't text files — Dundor attaches its logs as .txt.";
+    return;
+  }
+  files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+  const items = await Promise.all(files.map(async (file) => ({ label: file.name, text: await file.text() })));
+  load(items);
+}
+
+$("filePick").addEventListener("change", (e) => { readFiles(e.target.files); e.target.value = ""; });
+
+const drop = $("drop");
+for (const evt of ["dragenter", "dragover"]) {
+  drop.addEventListener(evt, (e) => { e.preventDefault(); drop.classList.add("over"); });
+}
+for (const evt of ["dragleave", "dragend"]) {
+  drop.addEventListener(evt, () => drop.classList.remove("over"));
+}
+drop.addEventListener("drop", (e) => {
+  e.preventDefault();
+  drop.classList.remove("over");
+  if (e.dataTransfer?.files?.length) readFiles(e.dataTransfer.files);
+});
+// Dropping anywhere on the page works; only the panel needs to light up.
+window.addEventListener("dragover", (e) => e.preventDefault());
+window.addEventListener("drop", (e) => {
+  e.preventDefault();
+  if (e.dataTransfer?.files?.length) readFiles(e.dataTransfer.files);
+});
+
 $("logInput").value = SAMPLE;
-$("parseBtn").addEventListener("click", () => run($("logInput").value));
+$("parseBtn").addEventListener("click", () => load([{ label: "Pasted log", text: $("logInput").value }]));
 renderDeck();
-run(SAMPLE);
+load([{ label: "Sample fight", text: SAMPLE }]);
 </script>
