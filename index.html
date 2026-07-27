@@ -1,0 +1,1603 @@
+<title>Dundor Battle Ledger</title>
+
+<style>
+  /* ─────────────────────────────────────────────────────────────
+     DUNDOR BATTLE LEDGER
+     Palette: subterranean slate-indigo ground, torch amber chrome.
+     Series colors are validated categorical slots 1 & 2 (blue/orange).
+     Type: Georgia (the chronicle voice) + system mono (the readout).
+     Motif: the bracket — lifted from the log's own [actor] syntax.
+     ───────────────────────────────────────────────────────────── */
+
+  :root {
+    color-scheme: light;
+
+    --ground:    #EDEFF3;
+    --panel:     #FFFFFF;
+    --panel-2:   #F5F6F9;
+    --sunken:    #E4E7ED;
+    --rule:      #D3D7E0;
+    --rule-soft: #E3E6EC;
+
+    --ink:       #15151E;
+    --ink-2:     #4E5063;
+    --ink-3:     #7C7F92;
+
+    --torch:     #8F5415;
+    --torch-fill:#C9752A;
+    --torch-dim: rgba(201, 117, 42, 0.10);
+
+    --s1:        #2a78d6;   /* categorical slot 1 — the player */
+    --s2:        #eb6834;   /* categorical slot 2 — the monster */
+    --s1-soft:   rgba(42, 120, 214, 0.14);
+    --s2-soft:   rgba(235, 104, 52, 0.14);
+
+    --good:      #1F7A4D;
+    --warn:      #8A6410;
+    --crit:      #B03A28;
+    --good-soft: rgba(31, 122, 77, 0.12);
+    --warn-soft: rgba(138, 100, 16, 0.12);
+    --crit-soft: rgba(176, 58, 40, 0.12);
+
+    --shadow:    0 1px 2px rgba(21, 21, 30, .05), 0 8px 24px -12px rgba(21, 21, 30, .12);
+
+    --display: Georgia, "Iowan Old Style", "Palatino Linotype", "Book Antiqua", serif;
+    --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, "Cascadia Mono", "Roboto Mono", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+
+      --ground:    #101018;
+      --panel:     #191922;
+      --panel-2:   #1F1F2B;
+      --sunken:    #0C0C13;
+      --rule:      #2E2E3D;
+      --rule-soft: #24242F;
+
+      --ink:       #E6E3DA;
+      --ink-2:     #A2A0B0;
+      --ink-3:     #74738A;
+
+      --torch:     #E8933A;
+      --torch-fill:#E8933A;
+      --torch-dim: rgba(232, 147, 58, 0.12);
+
+      --s1:        #3987e5;
+      --s2:        #d95926;
+      --s1-soft:   rgba(57, 135, 229, 0.18);
+      --s2-soft:   rgba(217, 89, 38, 0.18);
+
+      --good:      #52A97A;
+      --warn:      #D0A23C;
+      --crit:      #DC6A55;
+      --good-soft: rgba(82, 169, 122, 0.14);
+      --warn-soft: rgba(208, 162, 60, 0.14);
+      --crit-soft: rgba(220, 106, 85, 0.14);
+
+      --shadow:    0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px -14px rgba(0, 0, 0, .6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --ground:    #101018;
+    --panel:     #191922;
+    --panel-2:   #1F1F2B;
+    --sunken:    #0C0C13;
+    --rule:      #2E2E3D;
+    --rule-soft: #24242F;
+
+    --ink:       #E6E3DA;
+    --ink-2:     #A2A0B0;
+    --ink-3:     #74738A;
+
+    --torch:     #E8933A;
+    --torch-fill:#E8933A;
+    --torch-dim: rgba(232, 147, 58, 0.12);
+
+    --s1:        #3987e5;
+    --s2:        #d95926;
+    --s1-soft:   rgba(57, 135, 229, 0.18);
+    --s2-soft:   rgba(217, 89, 38, 0.18);
+
+    --good:      #52A97A;
+    --warn:      #D0A23C;
+    --crit:      #DC6A55;
+    --good-soft: rgba(82, 169, 122, 0.14);
+    --warn-soft: rgba(208, 162, 60, 0.14);
+    --crit-soft: rgba(220, 106, 85, 0.14);
+
+    --shadow:    0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px -14px rgba(0, 0, 0, .6);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .wrap {
+    max-width: 1080px;
+    margin: 0 auto;
+    padding: 40px 24px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 44px;
+  }
+
+  /* ── the bracket motif ─────────────────────────────────────── */
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .16em;
+    text-transform: uppercase;
+    color: var(--torch);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 0;
+  }
+  .eyebrow::before { content: "["; opacity: .5; }
+  .eyebrow::after {
+    content: "";
+    flex: 1;
+    height: 0;
+    border-top: 1px solid var(--rule);
+    box-shadow: 0 2px 0 var(--rule-soft);
+  }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+
+  h2.title {
+    font-family: var(--display);
+    font-size: 24px;
+    font-weight: 700;
+    letter-spacing: -.01em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+  }
+
+  /* ── masthead ──────────────────────────────────────────────── */
+  header.masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid var(--rule);
+    box-shadow: 0 2px 0 var(--rule-soft);
+  }
+  .brand {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: .3em;
+    text-transform: uppercase;
+    color: var(--torch);
+  }
+  .masthead h1 {
+    font-family: var(--display);
+    font-size: clamp(30px, 5.5vw, 46px);
+    line-height: 1.06;
+    font-weight: 700;
+    letter-spacing: -.02em;
+    margin: 4px 0 0;
+    text-wrap: balance;
+  }
+  .masthead p {
+    margin: 6px 0 0;
+    color: var(--ink-2);
+    max-width: 62ch;
+    font-size: 13.5px;
+  }
+
+  /* ── fight banner ──────────────────────────────────────────── */
+  .banner { padding: 22px 24px; display: flex; flex-direction: column; gap: 18px; }
+  .matchup {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 12px 14px;
+  }
+  .matchup .who {
+    font-family: var(--display);
+    font-size: clamp(20px, 3.4vw, 28px);
+    font-weight: 700;
+    letter-spacing: -.01em;
+  }
+  .matchup .who.p { color: var(--s1); }
+  .matchup .who.m { color: var(--s2); }
+  .matchup .vs {
+    font-size: 11px;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    font-size: 12px;
+    color: var(--ink-2);
+  }
+  .meta-row b { color: var(--ink); font-weight: 700; }
+
+  .pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: 2px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    border: 1px solid;
+  }
+  .pill.win  { color: var(--good); background: var(--good-soft); border-color: color-mix(in srgb, var(--good) 40%, transparent); }
+  .pill.loss { color: var(--crit); background: var(--crit-soft); border-color: color-mix(in srgb, var(--crit) 40%, transparent); }
+
+  /* ── the contrast: discord vs ledger ───────────────────────── */
+  .contrast {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--rule);
+    border-top: 1px solid var(--rule);
+  }
+  @media (max-width: 720px) { .contrast { grid-template-columns: 1fr; } }
+  .contrast > div { background: var(--panel); padding: 18px 22px; display: flex; flex-direction: column; gap: 10px; }
+  .contrast .lbl {
+    font-size: 10.5px; font-weight: 700; letter-spacing: .16em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .discord-lines { margin: 0; font-size: 12.5px; color: var(--ink-2); line-height: 1.7; }
+  .discord-lines span { display: block; }
+  .bigstat { display: flex; align-items: baseline; gap: 8px; }
+  .bigstat .n {
+    font-family: var(--display); font-size: 40px; font-weight: 700;
+    line-height: 1; letter-spacing: -.02em; color: var(--torch);
+  }
+  .bigstat .u { font-size: 12px; color: var(--ink-2); }
+
+  /* ── telemetry tiles ───────────────────────────────────────── */
+  .tiles {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);   /* 8 tiles → 2 clean rows, no orphan cells */
+    gap: 1px;
+    background: var(--rule);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  @media (max-width: 820px) { .tiles { grid-template-columns: repeat(2, 1fr); } }
+  .tile {
+    background: var(--panel);
+    padding: 14px 16px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .tile .k {
+    font-size: 10px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: var(--ink-3);
+  }
+  .tile .v {
+    font-family: var(--display); font-size: 27px; font-weight: 700;
+    line-height: 1.05; letter-spacing: -.02em;
+  }
+  .tile .v small { font-family: var(--mono); font-size: 12px; font-weight: 400; color: var(--ink-3); letter-spacing: 0; }
+  .tile .s { font-size: 11px; color: var(--ink-2); }
+  .tile .meter { height: 3px; background: var(--sunken); border-radius: 2px; overflow: hidden; margin-top: 3px; }
+  .tile .meter i { display: block; height: 100%; border-radius: 2px; }
+
+  /* ── insights ──────────────────────────────────────────────── */
+  .reads { display: flex; flex-direction: column; gap: 1px; background: var(--rule); border: 1px solid var(--rule); border-radius: 3px; overflow: hidden; }
+  .read {
+    background: var(--panel);
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 88px 1fr;
+    gap: 4px 20px;
+    align-items: start;
+  }
+  @media (max-width: 620px) { .read { grid-template-columns: 1fr; gap: 8px; } }
+  .read .tag {
+    font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    padding: 3px 0; color: var(--ink-3);
+    border-top: 2px solid var(--rule);
+  }
+  .read.sev-crit .tag { border-top-color: var(--crit); color: var(--crit); }
+  .read.sev-warn .tag { border-top-color: var(--warn); color: var(--warn); }
+  .read.sev-good .tag { border-top-color: var(--good); color: var(--good); }
+  .read.sev-note .tag { border-top-color: var(--torch-fill); color: var(--torch); }
+  .read h3 {
+    font-family: var(--display); font-size: 17px; font-weight: 700;
+    margin: 0; letter-spacing: -.01em; text-wrap: balance;
+  }
+  .read p { margin: 4px 0 0; color: var(--ink-2); font-size: 13px; max-width: 68ch; }
+  .read p b { color: var(--ink); font-weight: 700; }
+
+  /* ── chart ─────────────────────────────────────────────────── */
+  .chartwrap { padding: 20px 22px 16px; display: flex; flex-direction: column; gap: 14px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; align-items: center; }
+  .legend .item { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; color: var(--ink-2); }
+  .legend .swatch { width: 14px; height: 3px; border-radius: 2px; flex: none; }
+  .legend .phase { width: 12px; height: 12px; border-radius: 2px; flex: none; border: 1px solid var(--rule); }
+  .chart-scroll { overflow-x: auto; }
+  svg.hp { display: block; width: 100%; min-width: 520px; height: auto; }
+  svg.hp text { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+  .axis-label { font-size: 10px; fill: var(--ink-3); letter-spacing: .1em; text-transform: uppercase; }
+  .tick { font-size: 10px; fill: var(--ink-3); }
+  .gridline { stroke: var(--rule-soft); stroke-width: 1; }
+  .zeroline { stroke: var(--rule); stroke-width: 1; }
+  .endlabel { font-size: 11px; font-weight: 700; }
+  .crosshair { stroke: var(--ink-3); stroke-width: 1; stroke-dasharray: 3 3; }
+  .hoverdot { stroke: var(--panel); stroke-width: 2; }
+
+  .tipbox {
+    position: absolute; pointer-events: none; opacity: 0;
+    transform: translate(-50%, -100%);
+    background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 3px; box-shadow: var(--shadow);
+    padding: 8px 10px; font-size: 11.5px; white-space: nowrap; z-index: 20;
+    transition: opacity .1s ease;
+  }
+  .tipbox .tt { font-weight: 700; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 4px; }
+  .tipbox .tr { display: flex; align-items: center; gap: 7px; }
+  .tipbox .tr i { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+  .tipbox .tr b { margin-left: auto; padding-left: 12px; }
+
+  details.tableview { border-top: 1px solid var(--rule-soft); padding-top: 12px; }
+  details.tableview summary {
+    cursor: pointer; font-size: 11px; font-weight: 700; letter-spacing: .12em;
+    text-transform: uppercase; color: var(--ink-2); list-style: none;
+  }
+  details.tableview summary::-webkit-details-marker { display: none; }
+  details.tableview summary::before { content: "+ "; color: var(--torch); }
+  details.tableview[open] summary::before { content: "− "; }
+  .tbl-scroll { overflow-x: auto; margin-top: 12px; }
+  table.data { border-collapse: collapse; font-size: 12px; width: 100%; }
+  table.data th, table.data td { padding: 5px 12px 5px 0; text-align: right; white-space: nowrap; }
+  table.data th:first-child, table.data td:first-child { text-align: left; }
+  table.data thead th {
+    font-size: 10px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--ink-3); border-bottom: 1px solid var(--rule); font-weight: 700;
+  }
+  table.data tbody td { border-bottom: 1px solid var(--rule-soft); color: var(--ink-2); }
+  table.data tbody td:first-child { color: var(--ink); }
+
+  /* ── turn log ──────────────────────────────────────────────── */
+  .turnlog { display: flex; flex-direction: column; }
+  .turn {
+    display: grid;
+    grid-template-columns: 62px 1fr;
+    gap: 16px;
+    padding: 12px 20px 13px;
+    border-bottom: 1px solid var(--rule-soft);
+    background: var(--panel);
+  }
+  .turn:last-child { border-bottom: 0; }
+  .turn.idle { background: var(--panel-2); }
+  .turn.kill { background: var(--crit-soft); }
+  .gutter { display: flex; align-items: flex-start; gap: 8px; padding-top: 1px; }
+  .gutter .stripe { width: 3px; align-self: stretch; min-height: 18px; border-radius: 2px; background: var(--rule); flex: none; }
+  .gutter.p .stripe { background: var(--s1); }
+  .gutter.m .stripe { background: var(--s2); }
+  .gutter .tn { font-size: 11px; font-weight: 700; color: var(--ink-3); letter-spacing: .06em; }
+  .beats { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  /* NOT a flex container — gap would inject space before punctuation ("alerts it . 7 tiles") */
+  .beat { font-size: 12.5px; color: var(--ink-2); }
+  .beat .actor { font-weight: 700; }
+  .beat .actor.p { color: var(--s1); }
+  .beat .actor.m { color: var(--s2); }
+  .beat.head { color: var(--ink); font-size: 13px; }
+  .beat.quiet { color: var(--ink-3); font-size: 12px; }
+  .roll {
+    display: inline-block; margin-left: 7px;
+    font-size: 10.5px; color: var(--ink-3); padding: 1px 6px;
+    border: 1px solid var(--rule); border-radius: 2px; white-space: nowrap;
+  }
+  .roll.thin { color: var(--warn); border-color: color-mix(in srgb, var(--warn) 45%, transparent); background: var(--warn-soft); }
+
+  .dmg {
+    display: grid;
+    grid-template-columns: 92px 1fr auto;
+    gap: 4px 12px;
+    align-items: center;
+    font-size: 12px;
+    padding: 6px 10px;
+    background: var(--sunken);
+    border-radius: 2px;
+    border-left: 3px solid var(--rule);
+  }
+  .dmg.physical { border-left-color: var(--ink-3); }
+  .dmg.poison   { border-left-color: var(--good); }
+  .dmg.fire     { border-left-color: var(--crit); }
+  .dmg.cold     { border-left-color: var(--s1); }
+  .dmg .type { font-weight: 700; color: var(--ink); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+  .dmg .chain { display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; color: var(--ink-3); font-size: 11px; }
+  .dmg .chain .step { white-space: nowrap; }
+  .dmg .chain .cut { color: var(--s1); }
+  .dmg .out { font-weight: 700; color: var(--ink); white-space: nowrap; }
+  @media (max-width: 620px) { .dmg { grid-template-columns: 1fr; } }
+
+  .hpafter { display: flex; align-items: center; gap: 10px; font-size: 12px; flex-wrap: wrap; }
+  .hpbar { width: 120px; height: 5px; background: var(--sunken); border-radius: 3px; overflow: hidden; flex: none; }
+  .hpbar i { display: block; height: 100%; border-radius: 3px; }
+
+  /* ── stat blocks ───────────────────────────────────────────── */
+  .blocks { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+  @media (max-width: 720px) { .blocks { grid-template-columns: 1fr; } }
+  .block { padding: 0; overflow: hidden; }
+  .block header { padding: 13px 18px; border-bottom: 1px solid var(--rule); display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+  .block header .nm { font-family: var(--display); font-size: 18px; font-weight: 700; letter-spacing: -.01em; }
+  .block.p header { border-top: 3px solid var(--s1); }
+  .block.m header { border-top: 3px solid var(--s2); }
+  .block.p header .nm { color: var(--s1); }
+  .block.m header .nm { color: var(--s2); }
+  .block header .sub { font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
+  .kv { display: grid; grid-template-columns: 1fr auto; gap: 0; }
+  .kv > div { padding: 7px 18px; border-bottom: 1px solid var(--rule-soft); font-size: 12.5px; }
+  .kv > div:nth-child(odd) { color: var(--ink-2); }
+  .kv > div:nth-child(even) { text-align: right; font-weight: 700; }
+  .kv .adv { color: var(--good); }
+  .kv .dis { color: var(--crit); }
+
+  /* ── command deck ──────────────────────────────────────────── */
+  .deck { padding: 20px 22px; display: flex; flex-direction: column; gap: 16px; }
+  .deckgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(158px, 1fr)); gap: 10px; }
+  button.cmd {
+    font-family: var(--mono);
+    text-align: left;
+    background: var(--panel-2);
+    border: 1px solid var(--rule);
+    border-radius: 3px;
+    padding: 11px 13px;
+    cursor: pointer;
+    color: var(--ink);
+    display: flex; flex-direction: column; gap: 3px;
+    transition: border-color .12s ease, background .12s ease, transform .12s ease;
+  }
+  button.cmd:hover { border-color: var(--torch-fill); background: var(--torch-dim); }
+  button.cmd:active { transform: translateY(1px); }
+  button.cmd:focus-visible { outline: 2px solid var(--torch-fill); outline-offset: 2px; }
+  button.cmd .c { font-size: 13px; font-weight: 700; }
+  button.cmd .d { font-size: 11px; color: var(--ink-3); }
+  button.cmd.copied { border-color: var(--good); background: var(--good-soft); }
+  button.cmd.copied .d { color: var(--good); }
+
+  .note {
+    font-size: 12px; color: var(--ink-2);
+    border-left: 3px solid var(--torch-fill);
+    background: var(--torch-dim);
+    padding: 11px 14px; border-radius: 0 2px 2px 0;
+    max-width: 74ch;
+  }
+  .note b { color: var(--ink); }
+
+  /* ── paste box ─────────────────────────────────────────────── */
+  .pastewrap { padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+  textarea {
+    font-family: var(--mono); font-size: 11.5px; line-height: 1.5;
+    width: 100%; min-height: 140px; resize: vertical;
+    background: var(--sunken); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 3px; padding: 12px;
+  }
+  textarea:focus-visible { outline: 2px solid var(--torch-fill); outline-offset: 1px; }
+  .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  button.primary {
+    font-family: var(--mono); font-size: 12px; font-weight: 700;
+    letter-spacing: .1em; text-transform: uppercase;
+    background: var(--torch-fill); color: #14140E;
+    border: 1px solid var(--torch-fill); border-radius: 3px;
+    padding: 9px 18px; cursor: pointer;
+  }
+  button.primary:hover { filter: brightness(1.08); }
+  button.primary:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+  .status { font-size: 12px; color: var(--ink-2); }
+  .status.err { color: var(--crit); }
+
+  footer.foot {
+    border-top: 1px solid var(--rule);
+    box-shadow: 0 -2px 0 var(--rule-soft) inset;
+    padding-top: 20px; font-size: 11.5px; color: var(--ink-3);
+    display: flex; flex-direction: column; gap: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="brand">Dundor · Battle Ledger</div>
+    <h1>Everything the fight summary threw away.</h1>
+    <p>A working parser prototype. It reads one raw Dundor combat log and reconstructs
+       the fight: every roll, every point of mitigation, every banked move, every
+       wasted turn. Paste your own log at the bottom.</p>
+  </header>
+
+  <section id="fight"></section>
+
+  <section>
+    <p class="eyebrow">Telemetry</p>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section>
+    <p class="eyebrow">The read</p>
+    <h2 class="title">What actually decided this fight</h2>
+    <div class="reads" id="reads"></div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Hit points</p>
+    <h2 class="title">Both health bars, turn by turn</h2>
+    <div class="panel chartwrap" style="position:relative">
+      <div class="legend" id="legend"></div>
+      <div class="chart-scroll" id="chartHost"></div>
+      <details class="tableview">
+        <summary>Data table</summary>
+        <div class="tbl-scroll" id="hpTable"></div>
+      </details>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Turn log</p>
+    <h2 class="title">The play by play</h2>
+    <div class="panel turnlog" id="turnlog"></div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Combatants</p>
+    <h2 class="title">Stat blocks, with the gaps that mattered</h2>
+    <div class="blocks" id="blocks"></div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Command deck</p>
+    <h2 class="title">The compliant control panel</h2>
+    <div class="panel deck">
+      <p class="note"><b>How this works.</b> Discord forbids automating a user account, and
+         no bot API can invoke another bot's commands. So these buttons copy the exact command
+         to your clipboard — you paste and send it yourself. Same few keystrokes saved, no
+         risk to your account. Behind one interface, so a real sender drops in if Dundor ever
+         ships an API.</p>
+      <div class="deckgrid" id="deck"></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="eyebrow">Try it</p>
+    <h2 class="title">Parse your own fight</h2>
+    <div class="panel pastewrap">
+      <textarea id="logInput" spellcheck="false" aria-label="Raw Dundor fight log"></textarea>
+      <div class="actions">
+        <button class="primary" id="parseBtn">Parse log</button>
+        <span class="status" id="status"></span>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div>Prototype — parser and analytics run entirely in this page. No data leaves it.</div>
+    <div>Dundor is a third-party Discord bot; this is an unofficial reader of output you already own.</div>
+  </footer>
+</div>
+
+<div class="tipbox" id="tip" role="status" aria-live="polite"></div>
+
+<script>
+/* ═══════════════════════════════════════════════════════════════
+   1. THE PARSER
+   Pure function: raw log text → structured fight object.
+   No DOM, no deps — this is the module the web UI and a future
+   log-reader bot would both import.
+   ═══════════════════════════════════════════════════════════════ */
+
+const RE = {
+  header:  /^The fight happens between (.+?) and (.+?)!$/,
+  statsFor:/^Stats for (.+?)\s*-{5,}\s*$/,
+  logsHdr: /^Logs\s*-{5,}\s*$/,
+  turn:    /^TURN (\d+)\s*-{5,}\s*$/,
+  dist:    /^The distance between you is (\d+) tiles\.$/,
+  first:   /^\[(.+?)\] starts first because \[(.+?)\] hasn't noticed them yet\.$/,
+  gains:   /^\[(.+?)\] gains ([\d.]+) moves\. Moves left = ([\d.]+)\. HP left: (-?\d+)\/(\d+)\. Mana left: (-?\d+)\/(\d+)\.$/,
+  move:    /^\[(.+?)\] moves (\d+) spaces? closer to \[(.+?)\]\. Distance left = (\d+)\.$/,
+  sneak:   /^\[(.+?)\] sneaks (\d+) spaces? closer but alerts \[(.+?)\]! Distance left = (\d+)!?\.?/,
+  uses:    /^\[(.+?)\] uses ([\d.]+) moves! Moves left = ([\d.]+)\.$/,
+  miss:    /^\[(.+?)\] tries attacking in melee but misses! \[evade roll: ([\d.]+) <= ([\d.]+)\]/,
+  hit:     /^\[(.+?)\] hits \[(.+?)\] with a melee attack! Applying each damage\. \[evade roll: ([\d.]+) > ([\d.]+)\]\./,
+  ac:      /^\[(.+?)\] rolls (\d+) for AC and reduces the damage by (\d+)! Damage Left = (-?\d+)$/,
+  resist:  /^\[(.+?)\] reduces the damage by ([\d.]+)% because of their resistance to this element! Damage Left = (-?\d+)$/,
+  roll:    /^\[(.+?)\] rolls (\d+) for :([\w+-]+): (.+?)!$/,
+  damaged: /^\[(.+?)\] gets damaged by (\d+) damage! HP Left = (-?\d+)\/(\d+)\.$/,
+  dies:    /^\[(.+?)\] dies!$/,
+  wins:    /^\[(.+?)\] wins the fight because \[(.+?)\] has died!$/,
+};
+
+const num = (s) => { const n = parseFloat(s); return Number.isFinite(n) ? n : null; };
+
+function parseStatLines(lines) {
+  // The stat dump is indented "Key: value" pairs across nested blocks.
+  // We flatten — key names are unique enough within one entity.
+  const out = {};
+  for (const raw of lines) {
+    const m = raw.match(/^\s*([A-Za-z][A-Za-z0-9 _]*?)\s*:\s*(.*)$/);
+    if (!m) continue;
+    const key = m[1].trim();
+    const val = m[2].trim();
+    if (val === "" || key === "stats" || key === "- stats") continue;
+    out[key] = val;
+  }
+  // Damages: [DamageInfo(type=:punch: physical, min_amount=41, max_amount=138), ...]
+  out._damages = [];
+  if (out.Damages) {
+    const re = /DamageInfo\(type=:([\w+-]+):\s*([^,]+),\s*min_amount=(-?\d+),\s*max_amount=(-?\d+)\)/g;
+    let d;
+    while ((d = re.exec(out.Damages)) !== null) {
+      out._damages.push({ emoji: d[1], type: d[2].trim(), min: +d[3], max: +d[4] });
+    }
+  }
+  out._kind = lines.some(l => /PlayerData:/.test(l)) ? "player"
+            : lines.some(l => /MonsterData:/.test(l)) ? "monster" : "unknown";
+  return out;
+}
+
+function parseFight(text) {
+  const lines = text.replace(/\r/g, "").split("\n");
+
+  let players = null;
+  const statBlocks = new Map();   // name -> raw lines
+  let cursor = null;              // current stat block name
+  let logStart = -1;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const h = line.match(RE.header);
+    if (h) { players = [h[1].trim(), h[2].trim()]; continue; }
+    const sf = line.match(RE.statsFor);
+    if (sf) { cursor = sf[1].trim(); statBlocks.set(cursor, []); continue; }
+    if (RE.logsHdr.test(line)) { logStart = i + 1; cursor = null; break; }
+    if (cursor) statBlocks.get(cursor).push(line);
+  }
+
+  if (logStart < 0) throw new Error("No “Logs ---” section found. Paste the whole fight output, stats and all.");
+
+  const entities = {};
+  for (const [name, blk] of statBlocks) entities[name] = parseStatLines(blk);
+
+  // Combatant identity is resolved AFTER the log is read, so a log pasted
+  // without its stat header still works — the log names its own actors.
+  const fight = {
+    playerName: null, monsterName: null,
+    entities,
+    startDistance: null,
+    firstMover: null,
+    turns: [],
+    outcome: { winner: null, loser: null, decided: false },
+  };
+
+  let turn = null;
+  let pending = null;      // damage instance being assembled
+  let lastAttack = null;   // most recent hit, to attach damages to
+
+  const pushTurn = (n) => {
+    turn = { n, beats: [] };
+    fight.turns.push(turn);
+    return turn;
+  };
+  const beat = (o) => {
+    if (!turn) pushTurn(0);
+    turn.beats.push(o);
+    return o;
+  };
+
+  for (let i = logStart; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    let m;
+
+    if ((m = line.match(RE.turn)))    { pushTurn(+m[1]); pending = null; lastAttack = null; continue; }
+    if ((m = line.match(RE.dist)))    { fight.startDistance = +m[1]; continue; }
+    if ((m = line.match(RE.first)))   { fight.firstMover = m[1]; fight.ambush = true; continue; }
+
+    if ((m = line.match(RE.gains))) {
+      beat({ t: "gains", who: m[1], amount: num(m[2]), movesLeft: num(m[3]), hp: +m[4], hpMax: +m[5], mp: +m[6], mpMax: +m[7] });
+      continue;
+    }
+    if ((m = line.match(RE.sneak))) { beat({ t: "sneak", who: m[1], spaces: +m[2], target: m[3], distance: +m[4] }); continue; }
+    if ((m = line.match(RE.move)))  { beat({ t: "move",  who: m[1], spaces: +m[2], target: m[3], distance: +m[4] }); continue; }
+    if ((m = line.match(RE.uses)))  { beat({ t: "uses",  who: m[1], amount: num(m[2]), movesLeft: num(m[3]) }); continue; }
+
+    if ((m = line.match(RE.miss))) {
+      beat({ t: "miss", who: m[1], roll: num(m[2]), threshold: num(m[3]) });
+      continue;
+    }
+    if ((m = line.match(RE.hit))) {
+      lastAttack = beat({ t: "hit", who: m[1], target: m[2], roll: num(m[3]), threshold: num(m[4]), damages: [] });
+      continue;
+    }
+
+    // AC must be tested before the generic damage roll — both start "[x] rolls N for".
+    if ((m = line.match(RE.ac))) {
+      if (pending) { pending.acRoll = +m[2]; pending.acCut = +m[3]; pending.afterAc = +m[4]; }
+      continue;
+    }
+    if ((m = line.match(RE.resist))) {
+      if (pending) { pending.resistPct = num(m[2]); pending.afterResist = +m[3]; }
+      continue;
+    }
+    if ((m = line.match(RE.roll))) {
+      pending = { emoji: m[3], type: m[4].trim(), raw: +m[2], by: m[1] };
+      if (lastAttack) lastAttack.damages.push(pending);
+      else beat({ t: "orphanDamage", d: pending });
+      continue;
+    }
+    if ((m = line.match(RE.damaged))) {
+      if (pending) { pending.dealt = +m[2]; pending.hpAfter = +m[3]; pending.hpMax = +m[4]; pending.victim = m[1]; }
+      beat({ t: "damaged", who: m[1], amount: +m[2], hp: +m[3], hpMax: +m[4], of: pending });
+      pending = null;
+      continue;
+    }
+
+    if ((m = line.match(RE.dies))) { beat({ t: "dies", who: m[1] }); fight.outcome.loser = m[1]; continue; }
+    if ((m = line.match(RE.wins))) {
+      beat({ t: "wins", who: m[1], because: m[2] });
+      fight.outcome = { winner: m[1], loser: m[2], decided: true };
+      continue;
+    }
+    beat({ t: "raw", text: line });
+  }
+
+  // Actors in order of first appearance, plus the largest HP pool each was seen
+  // to have — the fallback when there is no stat block to read Hp from.
+  const seen = [];
+  const observedMax = {};
+  for (const t of fight.turns) for (const b of t.beats) {
+    if (!b.who) continue;
+    if (!seen.includes(b.who)) seen.push(b.who);
+    if (b.hpMax) observedMax[b.who] = Math.max(observedMax[b.who] || 0, b.hpMax);
+  }
+
+  let names = players || [...statBlocks.keys()];
+  if (names.length < 2) names = [...new Set([...names, ...seen])];
+  let [x, y] = names;
+  if (entities[y]?._kind === "player" && entities[x]?._kind !== "player") [x, y] = [y, x];
+  if (!x) throw new Error("Could not identify the combatants — is this a Dundor fight log?");
+  const P = x, M = y ?? seen.find(n => n !== x) ?? "Opponent";
+
+  [P, M].forEach((n, i) => {
+    if (!entities[n]) entities[n] = { _kind: i === 0 ? "player" : "monster", _damages: [], _synthesized: true };
+  });
+
+  fight.playerName = P;
+  fight.monsterName = M;
+  fight.maxHp = {
+    [P]: +entities[P].Hp || observedMax[P] || null,
+    [M]: +entities[M].Hp || observedMax[M] || null,
+  };
+  return fight;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   2. THE ANALYTICS
+   Everything below is derived — no numbers are hardcoded.
+   ═══════════════════════════════════════════════════════════════ */
+
+function analyze(f) {
+  const P = f.playerName, M = f.monsterName;
+  const blank = () => ({ attacks: 0, hits: 0, misses: 0, rawRolled: 0, dealt: 0, acAbsorbedByFoe: 0, resistAbsorbedByFoe: 0, flooredHits: 0, byType: {}, nearMisses: [] });
+  const s = { [P]: blank(), [M]: blank() };
+  const idle = { [P]: [], [M]: [] };
+  const acted = new Map();          // turn -> Set(who) that spent moves
+  const gained = new Map();         // turn -> [{who, movesLeft}]
+  const hpTrack = { [P]: f.maxHp[P], [M]: f.maxHp[M] };
+  const series = { [P]: [], [M]: [] };
+  const turnsSeen = [];
+  let firstAttackTurn = null, engagementTurn = null;
+  let distance = f.startDistance;
+  let closedAt = null;
+  let events = 0;
+
+  // t=0 baseline
+  series[P].push({ turn: 0, hp: f.maxHp[P] });
+  series[M].push({ turn: 0, hp: f.maxHp[M] });
+
+  for (const t of f.turns) {
+    if (t.n) turnsSeen.push(t.n);
+    for (const b of t.beats) {
+      events++;
+      if (b.t === "gains") {
+        if (!gained.has(t.n)) gained.set(t.n, []);
+        gained.get(t.n).push({ who: b.who, movesLeft: b.movesLeft });
+        if (b.who in hpTrack) hpTrack[b.who] = b.hp;
+      }
+      if (b.t === "uses") {
+        if (!acted.has(t.n)) acted.set(t.n, new Set());
+        acted.get(t.n).add(b.who);
+      }
+      if ((b.t === "move" || b.t === "sneak")) {
+        distance = b.distance;
+        if (distance === 0 && closedAt === null) closedAt = t.n;
+      }
+      if (b.t === "miss" && s[b.who]) {
+        s[b.who].attacks++; s[b.who].misses++;
+        const margin = b.threshold - b.roll;
+        s[b.who].nearMisses.push({ turn: t.n, margin, roll: b.roll, threshold: b.threshold });
+        if (firstAttackTurn === null) firstAttackTurn = t.n;
+      }
+      if (b.t === "hit" && s[b.who]) {
+        s[b.who].attacks++; s[b.who].hits++;
+        if (firstAttackTurn === null) firstAttackTurn = t.n;
+        for (const d of b.damages) {
+          s[b.who].rawRolled += d.raw;
+          const dealt = d.dealt ?? 0;
+          s[b.who].dealt += dealt;
+          if (d.acCut) s[b.who].acAbsorbedByFoe += d.acCut;
+          if (d.afterResist != null && d.resistPct != null) {
+            const before = d.raw;
+            s[b.who].resistAbsorbedByFoe += Math.max(0, before - d.afterResist);
+          }
+          // A hit is "floored" when AC would have wiped it out but 1 damage got through.
+          if (d.acCut != null && dealt === 1 && (d.afterResist ?? d.raw) - d.acCut < 1) s[b.who].flooredHits++;
+          const k = d.type;
+          s[b.who].byType[k] = (s[b.who].byType[k] || 0) + dealt;
+        }
+      }
+      if (b.t === "damaged" && b.who in hpTrack) hpTrack[b.who] = b.hp;
+    }
+    if (t.n) {
+      series[P].push({ turn: t.n, hp: hpTrack[P] });
+      series[M].push({ turn: t.n, hp: hpTrack[M] });
+    }
+    // idle = gained moves this turn but never spent any
+    for (const g of (gained.get(t.n) || [])) {
+      const didAct = acted.get(t.n)?.has(g.who);
+      if (!didAct) {
+        const spd = parseFloat(f.entities[g.who]?.["Attack Speed"] ?? "NaN");
+        (idle[g.who] ||= []).push({ turn: t.n, movesLeft: g.movesLeft, need: Number.isFinite(spd) ? spd : null,
+                           short: Number.isFinite(spd) ? +(spd - g.movesLeft).toFixed(2) : null });
+      }
+    }
+  }
+  engagementTurn = firstAttackTurn;
+
+  const totalTurns = turnsSeen.length ? Math.max(...turnsSeen) : 0;
+  const finalM = hpTrack[M], finalP = hpTrack[P];
+  // Overkill lands on whoever died — not always the monster.
+  const overkillOn = finalM < 0 ? M : (finalP < 0 ? P : null);
+  const overkill = overkillOn ? Math.abs(overkillOn === M ? finalM : finalP) : 0;
+
+  // Real absorption is raw-minus-dealt, NOT the sum of stated AC cuts. Dundor
+  // prints "reduces the damage by 140" against a 24-damage hit and then floors
+  // the result at 1 — summing the stated cuts overstates mitigation wildly.
+  const mitigation = (who) => {
+    const foe = who === P ? M : P;
+    const incomingRaw = s[foe].rawRolled;
+    const taken = s[foe].dealt;
+    const absorbed = Math.max(0, incomingRaw - taken);
+    return {
+      incomingRaw, absorbed, taken,
+      pct: incomingRaw ? (absorbed / incomingRaw) * 100 : 0,
+      acStated: s[foe].acAbsorbedByFoe,   // what the log claimed, for reference
+      flooredHits: s[foe].flooredHits,
+    };
+  };
+
+  return {
+    P, M, s, idle, series, totalTurns, firstAttackTurn: engagementTurn,
+    closedAt, overkill, overkillOn, finalP, finalM, events,
+    approachTurns: engagementTurn ? turnsSeen.filter(n => n < engagementTurn).length : 0,
+    turnsSeen,
+    mitP: mitigation(P), mitM: mitigation(M),
+    hitRateP: s[P].attacks ? (s[P].hits / s[P].attacks) * 100 : null,
+    hitRateM: s[M].attacks ? (s[M].hits / s[M].attacks) * 100 : null,
+  };
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   3. RENDER
+   ═══════════════════════════════════════════════════════════════ */
+
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const r1 = (n) => (Math.round(n * 10) / 10).toString();
+const pct = (n) => r1(n) + "%";
+
+const TYPE_GLYPH = { physical: "⚔", poison: "☣", fire: "🔥", cold: "❄", electric: "⚡", acid: "🜃", evil: "☠", holy: "✦" };
+
+function sideOf(A, name) { return name === A.P ? "p" : "m"; }
+
+function renderFight(f, A) {
+  const won = f.outcome.winner === A.P;
+  const pMax = f.maxHp[A.P], mMax = f.maxHp[A.M];
+  const hpOf = (hp, max) => hp == null ? "—" : (Number.isFinite(max) ? `${hp}/${max}` : `${hp}`);
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  // Reconstruct the one-line summary the way Dundor would have reported THIS
+  // outcome — never assume a win.
+  const summary = f.outcome.decided
+    ? (won
+        ? [`You defeat the ${A.M} in melee combat!`,
+           `You won the fight in ${plural(A.totalTurns, "turn")} with ${hpOf(A.finalP, pMax)} HP left!`]
+        : [`You are defeated by the ${A.M}!`,
+           `You lost the fight after ${plural(A.totalTurns, "turn")}.`])
+    : [`The fight ran ${plural(A.totalTurns, "turn")} with no recorded outcome.`];
+  $("fight").innerHTML = `
+    <div class="panel">
+      <div class="banner">
+        <div class="matchup">
+          <span class="who p">${esc(A.P)}</span>
+          <span class="vs">versus</span>
+          <span class="who m">${esc(A.M)}</span>
+          <span class="pill ${won ? "win" : "loss"}">${won ? "Victory" : "Defeat"}</span>
+        </div>
+        <div class="meta-row">
+          <span>Turns <b>${A.totalTurns}</b></span>
+          <span>Opening distance <b>${f.startDistance ?? "—"} tiles</b></span>
+          <span>Closed at <b>turn ${A.closedAt ?? "—"}</b></span>
+          <span>First swing <b>turn ${A.firstAttackTurn ?? "—"}</b></span>
+          <span>Ended <b>${hpOf(A.finalP, pMax)} HP</b> vs <b>${hpOf(A.finalM, mMax)} HP</b></span>
+          ${f.ambush ? `<span><b>${esc(f.firstMover)}</b> opened unseen</span>` : ""}
+        </div>
+      </div>
+      <div class="contrast">
+        <div>
+          <div class="lbl">The summary you normally get</div>
+          <p class="discord-lines">
+            ${f.startDistance != null ? `<span>${esc(A.P)} explored a dungeon and spotted a ${esc(A.M)} at a distance of ${f.startDistance} spaces!</span>` : ""}
+            ${summary.map(l => `<span>${esc(l)}</span>`).join("")}
+          </p>
+        </div>
+        <div>
+          <div class="lbl">What the log actually contains</div>
+          <div class="bigstat"><span class="n">${A.events}</span><span class="u">discrete events parsed<br>across ${plural(A.turnsSeen.length, "logged turn")}</span></div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function renderTiles(f, A) {
+  const pMax = f.maxHp[A.P], mMax = f.maxHp[A.M];
+  const dealt = A.s[A.P].dealt, taken = A.s[A.M].dealt;
+  const idleP = A.idle[A.P].length;
+  const combatTurns = A.firstAttackTurn ? A.totalTurns - A.firstAttackTurn + 1 : A.totalTurns;
+
+  const tile = (k, v, sub, meterPct, meterColor) => `
+    <div class="tile">
+      <span class="k">${k}</span>
+      <span class="v">${v}</span>
+      ${sub ? `<span class="s">${sub}</span>` : ""}
+      ${meterPct != null ? `<span class="meter"><i style="width:${Math.max(0, Math.min(100, meterPct))}%;background:${meterColor}"></i></span>` : ""}
+    </div>`;
+
+  $("tiles").innerHTML = [
+    tile("Damage dealt", dealt, `${A.s[A.P].rawRolled} rolled · ${A.mitM.absorbed} absorbed by it`, (dealt / Math.max(1, A.s[A.P].rawRolled)) * 100, "var(--s1)"),
+    tile("Damage taken", taken, `from ${A.mitP.incomingRaw} rolled against you`, (taken / Math.max(1, A.mitP.incomingRaw)) * 100, "var(--s2)"),
+    tile("Mitigated", pct(A.mitP.pct), `AC + resistances ate ${A.mitP.absorbed} damage`, A.mitP.pct, "var(--good)"),
+    tile("Your hit rate", A.hitRateP == null ? "—" : pct(A.hitRateP), `${A.s[A.P].hits} of ${A.s[A.P].attacks} swings landed`, A.hitRateP ?? 0, "var(--s1)"),
+    tile("Its hit rate", A.hitRateM == null ? "—" : pct(A.hitRateM), `${A.s[A.M].hits} of ${A.s[A.M].attacks} swings landed`, A.hitRateM ?? 0, "var(--s2)"),
+    tile("Overkill", A.overkill,
+      A.overkillOn === A.M ? `${pct((A.overkill / Math.max(1, dealt)) * 100)} of your output wasted`
+      : A.overkillOn === A.P ? "dealt to you past the killing blow"
+      : "nothing died", A.overkillOn ? (A.overkill / Math.max(1, A.overkillOn === A.M ? dealt : taken)) * 100 : 0, "var(--warn)"),
+    tile("Turns idle", idleP, idleP ? "banked moves, no action" : "never stalled", (idleP / Math.max(1, A.totalTurns)) * 100, "var(--warn)"),
+    tile("Approach", `${A.approachTurns}<small> / ${A.totalTurns}</small>`, `${combatTurns} turns of actual combat`, (A.approachTurns / Math.max(1, A.totalTurns)) * 100, "var(--ink-3)"),
+  ].join("");
+}
+
+function renderReads(f, A) {
+  const reads = [];
+  const P = A.P, M = A.M;
+  const pMax = f.maxHp[P];
+  const spd = parseFloat(f.entities[P]?.["Attack Speed"] ?? "NaN");
+  const approachShare = (A.approachTurns / Math.max(1, A.totalTurns)) * 100;
+
+  if (A.approachTurns > 0 && approachShare >= 30) {
+    reads.push({ sev: "note", tag: "Tempo", h: `${pct(approachShare)} of this fight was positioning.`,
+      p: `You spotted it at <b>${f.startDistance} tiles</b> and burned <b>${A.approachTurns} turns</b> getting into
+          range — contact at turn ${A.closedAt}, first swing at turn ${A.firstAttackTurn}. Nothing was at stake in
+          that stretch; it is pure clock. Spawn distance, not the monster, set the length of this fight.` });
+  }
+
+  if (A.mitP.pct >= 75 && A.mitP.incomingRaw > 0) {
+    const ac = f.entities[P]?.Ac;
+    const md = f.entities[M]?._damages?.[0];
+    reads.push({ sev: "good", tag: "Defense", h: `Your armour made this a non-fight.`,
+      p: `It connected on ${A.hitRateM != null ? pct(A.hitRateM) : "most"} of its swings and still could not hurt you.
+          <b>${A.mitP.incomingRaw} damage</b> was rolled at you across ${A.s[M].attacks} attacks; you took
+          <b>${A.mitP.taken}</b> — ${pct(A.mitP.pct)} absorbed. AC <b>${ac}</b> against
+          ${md ? `${md.min}–${md.max}` : "its small"} hits means every blow bottoms out at the
+          <b>1 damage floor</b>${A.mitP.flooredHits ? `, which is exactly what happened all ${A.mitP.flooredHits} times` : ""}.
+          Worth knowing: the log claims <b>${A.mitP.acStated}</b> total damage reduced, but only
+          <b>${A.mitP.absorbed}</b> was ever there to reduce — a huge AC roll against a small hit still
+          only absorbs that hit. The floor, not your AC, is the real ceiling.` });
+  }
+
+  const idleP = A.idle[P];
+  if (idleP.length && Number.isFinite(spd)) {
+    const shorts = idleP.filter(i => i.short != null && i.short > 0);
+    const detail = shorts.slice(0, 3).map(i => `turn ${i.turn} (short ${r1(i.short)})`).join(", ");
+    reads.push({ sev: "warn", tag: "Attack speed", h: `Attack speed ${r1(spd)} cost you ${idleP.length} turn${idleP.length === 1 ? "" : "s"}.`,
+      p: `You regain 1.0 moves per turn but each swing costs <b>${r1(spd)}</b>, so you bank a fraction and
+          periodically stall out with nothing to spend it on — ${detail || "several turns"}. A weapon at
+          1.0 speed converts those dead turns into real attacks; this is the single clearest
+          upgrade the log points at.` });
+  }
+
+  if (A.overkill > 0 && A.overkillOn === M) {
+    const dm = f.entities[P]?._damages?.[0];
+    reads.push({ sev: "note", tag: "Overkill", h: `${A.overkill} damage spilled past the kill.`,
+      p: `Your final blow left it at <b>${A.finalM}/${f.maxHp[M]}</b>.
+          ${dm ? `Your minimum ${esc(dm.type)} roll alone is <b>${dm.min}</b> against a monster with ${f.maxHp[M]} HP —` : "Your damage floor is high enough that"}
+          you are meaningfully over-geared for this tier. Deeper dungeons, not better rolls, are the constraint now.` });
+  }
+
+  const nm = A.s[P].nearMisses.filter(n => n.margin < 2).sort((a, b) => a.margin - b.margin)[0];
+  if (nm) {
+    reads.push({ sev: "warn", tag: "Variance", h: `Your turn-${nm.turn} miss failed by ${nm.margin.toFixed(2)}.`,
+      p: `The evade roll came in at <b>${nm.roll.toFixed(2)}</b> against a threshold of <b>${nm.threshold.toFixed(2)}</b> — a
+          margin of ${nm.margin.toFixed(2)}. Its evasion of ${f.entities[M]?.Ev} against your melee accuracy of
+          ${f.entities[P]?.["Melee Accuracy"]} gives it a ${r1(nm.threshold)}% dodge; that is the whole reason this
+          took an extra two turns.` });
+  }
+
+  const types = Object.entries(A.s[P].byType).sort((a, b) => b[1] - a[1]);
+  if (types.length > 1) {
+    const total = types.reduce((n, [, v]) => n + v, 0);
+    const [secName, secVal] = types[1];
+    const resisted = /^([\d.]+)$/.test(String(f.entities[M]?.Rpois ?? "")) && +f.entities[M].Rpois > 0 && secName === "poison";
+    const Cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+    reads.push({ sev: resisted ? "warn" : "note", tag: "Damage mix", h: `${esc(Cap(secName))} carried ${pct((secVal / total) * 100)} of your output.`,
+      p: `Split was ${types.map(([t, v]) => `<b>${v}</b> ${esc(t)}`).join(" / ")}.
+          ${resisted ? `But this monster carries poison resistance and shaved <b>${A.s[P].resistAbsorbedByFoe}</b> off the top —
+          against resistant targets a different element on your on-hit slot converts directly into damage.`
+          : `Neither element was resisted here, so the whole roll landed.`}` });
+  }
+
+  $("reads").innerHTML = reads.map(r => `
+    <div class="read sev-${r.sev}">
+      <div class="tag">${r.tag}</div>
+      <div><h3>${r.h}</h3><p>${r.p}</p></div>
+    </div>`).join("");
+}
+
+/* ── HP chart: 2 series, one axis (both are HP), crosshair + tooltip ── */
+function renderChart(f, A) {
+  const host = $("chartHost");
+  const P = A.P, M = A.M;
+  const W = 900, H = 280, ml = 44, mt = 16, mb = 34;
+  // Right margin must clear the longest direct label, or names get clipped.
+  const longest = Math.max(P.length, M.length);
+  const mr = Math.max(74, 20 + longest * 6.9);
+  const iw = W - ml - mr, ih = H - mt - mb;
+
+  // A log without a stat block has no declared max HP, so drop any point we
+  // could not resolve rather than plotting NaN.
+  const sP = A.series[P].filter(d => Number.isFinite(d.hp));
+  const sM = A.series[M].filter(d => Number.isFinite(d.hp));
+  if (sP.length < 2 || sM.length < 2) {
+    host.innerHTML = `<p style="color:var(--ink-2);font-size:13px;margin:0">
+      Not enough hit-point data in this log to chart. The turn log below still has everything else.</p>`;
+    $("legend").innerHTML = "";
+    $("hpTable").innerHTML = "";
+    return;
+  }
+
+  const allTurns = sP.map(d => d.turn);
+  const xMin = 0, xMax = Math.max(...allTurns);
+  const yMax = Math.max(...sP.map(d => d.hp), ...sM.map(d => d.hp),
+                        ...[f.maxHp[P], f.maxHp[M]].filter(Number.isFinite));
+  const yMin = Math.min(0, ...sP.map(d => d.hp), ...sM.map(d => d.hp));
+
+  const X = (t) => ml + ((t - xMin) / (xMax - xMin || 1)) * iw;
+  const Y = (v) => mt + ih - ((v - yMin) / (yMax - yMin || 1)) * ih;
+
+  const path = (arr) => arr.map((d, i) => `${i ? "L" : "M"}${X(d.turn).toFixed(1)},${Y(d.hp).toFixed(1)}`).join("");
+
+  const yTicks = [];
+  const step = yMax > 100 ? 40 : 25;
+  for (let v = Math.ceil(yMin / step) * step; v <= yMax; v += step) yTicks.push(v);
+  if (!yTicks.includes(0) && yMin < 0) yTicks.unshift(0);
+
+  // Drop a regular tick that would collide with the final one.
+  const xTicks = allTurns.filter(t => t === xMax || t === 0 || (t % 4 === 0 && xMax - t > 2));
+
+  const engage = A.firstAttackTurn;
+
+  host.innerHTML = `
+  <svg class="hp" viewBox="0 0 ${W} ${H}" role="img"
+       aria-label="Hit points per turn for ${esc(P)} and ${esc(M)} over ${A.totalTurns} turns. Full values in the data table below.">
+    ${engage ? `
+      <rect x="${ml}" y="${mt}" width="${(X(engage) - ml).toFixed(1)}" height="${ih}" fill="var(--rule-soft)" opacity="0.55"></rect>
+      <text class="axis-label" x="${(ml + 7).toFixed(1)}" y="${mt + ih - 9}">Approach</text>
+      <text class="axis-label" x="${(X(engage) + 7).toFixed(1)}" y="${mt + ih - 9}">Engagement</text>
+      <line x1="${X(engage).toFixed(1)}" y1="${mt}" x2="${X(engage).toFixed(1)}" y2="${mt + ih}" class="zeroline"></line>
+    ` : ""}
+    ${yTicks.map(v => `
+      <line class="${v === 0 ? "zeroline" : "gridline"}" x1="${ml}" y1="${Y(v).toFixed(1)}" x2="${ml + iw}" y2="${Y(v).toFixed(1)}"></line>
+      <text class="tick" x="${ml - 8}" y="${(Y(v) + 3.5).toFixed(1)}" text-anchor="end">${v}</text>`).join("")}
+    ${xTicks.map(t => `<text class="tick" x="${X(t).toFixed(1)}" y="${mt + ih + 18}" text-anchor="middle">${t}</text>`).join("")}
+    <text class="axis-label" x="${(ml + iw / 2).toFixed(1)}" y="${H - 3}" text-anchor="middle">Turn</text>
+
+    <path d="${path(sP)}" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+    <path d="${path(sM)}" fill="none" stroke="var(--s2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+
+    <circle cx="${X(xMax).toFixed(1)}" cy="${Y(A.finalP).toFixed(1)}" r="4.5" fill="var(--s1)" stroke="var(--panel)" stroke-width="2"></circle>
+    <circle cx="${X(xMax).toFixed(1)}" cy="${Y(A.finalM).toFixed(1)}" r="4.5" fill="var(--s2)" stroke="var(--panel)" stroke-width="2"></circle>
+    <text class="endlabel" fill="var(--s1)" x="${(X(xMax) + 10).toFixed(1)}" y="${(Y(A.finalP) + 4).toFixed(1)}">${esc(P)}</text>
+    <text class="endlabel" fill="var(--s2)" x="${(X(xMax) + 10).toFixed(1)}" y="${(Y(A.finalM) + 4).toFixed(1)}">${esc(M)}</text>
+
+    <line id="xh" class="crosshair" x1="0" y1="${mt}" x2="0" y2="${mt + ih}" opacity="0"></line>
+    <circle id="hd1" class="hoverdot" r="5" fill="var(--s1)" opacity="0"></circle>
+    <circle id="hd2" class="hoverdot" r="5" fill="var(--s2)" opacity="0"></circle>
+    <rect id="hitarea" x="${ml}" y="${mt}" width="${iw}" height="${ih}" fill="transparent" style="cursor:crosshair"></rect>
+  </svg>`;
+
+  $("legend").innerHTML = `
+    <span class="item"><span class="swatch" style="background:var(--s1)"></span>${esc(P)}${Number.isFinite(f.maxHp[P]) ? ` — max ${f.maxHp[P]} HP` : ""}</span>
+    <span class="item"><span class="swatch" style="background:var(--s2)"></span>${esc(M)}${Number.isFinite(f.maxHp[M]) ? ` — max ${f.maxHp[M]} HP` : ""}</span>
+    <span class="item"><span class="phase" style="background:var(--rule-soft)"></span>Approach — no attacks possible</span>`;
+
+  // hover layer
+  const svg = host.querySelector("svg");
+  const tip = $("tip"), xh = $("xh"), hd1 = $("hd1"), hd2 = $("hd2"), hit = $("hitarea");
+  const nearest = (t) => {
+    let best = sP[0], bd = Infinity;
+    for (const d of sP) { const dd = Math.abs(d.turn - t); if (dd < bd) { bd = dd; best = d; } }
+    return best.turn;
+  };
+  const show = (evt) => {
+    const box = svg.getBoundingClientRect();
+    const sx = (evt.clientX - box.left) / box.width * W;
+    const t = nearest(xMin + ((sx - ml) / iw) * (xMax - xMin));
+    const dp = sP.find(d => d.turn === t), dm = sM.find(d => d.turn === t);
+    if (!dp || !dm) return;
+    const px = X(t);
+    xh.setAttribute("x1", px); xh.setAttribute("x2", px); xh.setAttribute("opacity", "1");
+    hd1.setAttribute("cx", px); hd1.setAttribute("cy", Y(dp.hp)); hd1.setAttribute("opacity", "1");
+    hd2.setAttribute("cx", px); hd2.setAttribute("cy", Y(dm.hp)); hd2.setAttribute("opacity", "1");
+    tip.innerHTML = `<div class="tt">${t === 0 ? "Fight start" : "Turn " + t}</div>
+      <div class="tr"><i style="background:var(--s1)"></i>${esc(P)}<b>${dp.hp}/${f.maxHp[P]}</b></div>
+      <div class="tr"><i style="background:var(--s2)"></i>${esc(M)}<b>${dm.hp}/${f.maxHp[M]}</b></div>`;
+    tip.style.opacity = "1";
+    tip.style.left = (box.left + window.scrollX + (px / W) * box.width) + "px";
+    tip.style.top = (box.top + window.scrollY + (Math.min(Y(dp.hp), Y(dm.hp)) / H) * box.height - 12) + "px";
+  };
+  const hide = () => { tip.style.opacity = "0"; xh.setAttribute("opacity", "0"); hd1.setAttribute("opacity", "0"); hd2.setAttribute("opacity", "0"); };
+  hit.addEventListener("mousemove", show);
+  hit.addEventListener("mouseleave", hide);
+  hit.addEventListener("touchmove", (e) => { if (e.touches[0]) show(e.touches[0]); }, { passive: true });
+  hit.addEventListener("touchend", hide);
+
+  // table view (relief for the light-mode contrast warning + a11y)
+  $("hpTable").innerHTML = `
+    <table class="data">
+      <thead><tr><th>Turn</th><th>${esc(P)} HP</th><th>${esc(M)} HP</th><th>Phase</th></tr></thead>
+      <tbody>${sP.map((d, i) => {
+        const m = sM[i];
+        const phase = d.turn === 0 ? "start" : (engage && d.turn < engage ? "approach" : "engagement");
+        return `<tr><td>${d.turn || "—"}</td><td>${d.hp}</td><td>${m.hp}</td><td>${phase}</td></tr>`;
+      }).join("")}</tbody>
+    </table>`;
+}
+
+function renderTurnLog(f, A) {
+  const P = A.P;
+  const live = f.turns.filter(t => t.n);
+
+  // Runs of pure-walking turns are noise — six rows of "closes to N tiles" bury
+  // the turns that mattered. Fold each run into one row.
+  const isWalkOnly = (t) => {
+    const kinds = new Set(t.beats.map(b => b.t));
+    kinds.delete("gains"); kinds.delete("uses");
+    return kinds.size === 1 && kinds.has("move");
+  };
+  const groups = [];
+  let runningDist = f.startDistance;      // distance entering each turn
+  for (const t of live) {
+    const entering = runningDist;
+    for (const b of t.beats) if (b.t === "move" || b.t === "sneak") runningDist = b.distance;
+    const prev = groups[groups.length - 1];
+    if (isWalkOnly(t) && prev && prev.walk) prev.turns.push(t);
+    else groups.push({ walk: isWalkOnly(t), turns: [t], entering });
+  }
+
+  const rows = groups.map(g => {
+    if (g.walk && g.turns.length > 1) {
+      const first = g.turns[0], last = g.turns[g.turns.length - 1];
+      const from = g.entering;
+      const to = [...last.beats].reverse().find(b => b.t === "move")?.distance;
+      const movers = [...new Set(g.turns.flatMap(t => t.beats.filter(b => b.t === "move").map(b => b.who)))];
+      return `<div class="turn idle">
+        <div class="gutter"><span class="stripe"></span><span class="tn">T${first.n}–${last.n}</span></div>
+        <div class="beats"><div class="beat quiet">
+          ${movers.map(w => `<span class="actor ${sideOf(A, w)}">${esc(w)}</span>`).join(" and ")}
+          trade steps for <b>${g.turns.length} turns</b> — closing from ${from} tiles to ${to}. No attacks possible.
+        </div></div>
+      </div>`;
+    }
+    const t = g.turns[0];
+    return renderOneTurn(f, A, t);
+  });
+  $("turnlog").innerHTML = rows.join("");
+}
+
+function renderOneTurn(f, A, t) {
+  const P = A.P;
+  // A turn that lands physical + poison logs two "gets damaged" lines. Show one
+  // HP bar per victim — the state at the end of the turn — not one per instance.
+  const lastDamagedIdx = new Map();
+  t.beats.forEach((b, i) => { if (b.t === "damaged") lastDamagedIdx.set(b.who, i); });
+  return (t => {
+    const actors = new Set(t.beats.map(b => b.who).filter(Boolean));
+    const lead = [...actors][0];
+    const side = lead ? sideOf(A, lead) : "";
+    const spent = t.beats.some(b => b.t === "uses");
+    const isKill = t.beats.some(b => b.t === "dies" || b.t === "wins");
+
+    const beats = [];
+    for (const [bi, b] of t.beats.entries()) {
+      const who = b.who ? `<span class="actor ${sideOf(A, b.who)}">${esc(b.who)}</span>` : "";
+      if (b.t === "gains") continue; // folded into the idle note / hp bars
+      if (b.t === "uses")  continue;
+      if (b.t === "sneak") beats.push(`<div class="beat head">${who} sneaks ${b.spaces} closer — <b>alerts it</b>. ${b.distance} tiles left.</div>`);
+      else if (b.t === "move") beats.push(`<div class="beat">${who} closes to ${b.distance} tile${b.distance === 1 ? "" : "s"}.</div>`);
+      else if (b.t === "miss") {
+        const margin = b.threshold - b.roll;
+        beats.push(`<div class="beat head">${who} swings and <b>misses</b>
+          <span class="roll ${margin < 2 ? "thin" : ""}">evade ${b.roll.toFixed(2)} ≤ ${b.threshold.toFixed(2)}${margin < 2 ? ` · by ${r1(margin)}` : ""}</span></div>`);
+      }
+      else if (b.t === "hit") {
+        beats.push(`<div class="beat head">${who} connects
+          <span class="roll">evade ${b.roll.toFixed(2)} &gt; ${b.threshold.toFixed(2)}</span></div>`);
+        for (const d of b.damages) {
+          const preAc = d.afterResist ?? d.raw;
+          const floored = d.acCut != null && d.dealt === 1 && preAc - d.acCut < 1;
+          const chain = [`<span class="step">roll <b style="color:var(--ink)">${d.raw}</b></span>`];
+          if (d.resistPct != null) chain.push(`<span class="step cut">−${r1(d.resistPct)}% resist → ${d.afterResist}</span>`);
+          if (d.acCut != null) {
+            // Don't repeat the log's inflated cut: an AC roll of 140 vs a 24-damage
+            // hit absorbs 24, not 140. Say what actually happened.
+            chain.push(floored
+              ? `<span class="step cut">AC roll ${d.acRoll} swallows all ${preAc}</span><span class="step" style="color:var(--warn)">floored to 1</span>`
+              : `<span class="step cut">−${d.acCut} AC (roll ${d.acRoll})</span>`);
+          }
+          beats.push(`<div class="dmg ${esc(d.type)}">
+            <span class="type">${esc(d.type)}</span>
+            <span class="chain">${chain.join('<span style="opacity:.4">·</span>')}</span>
+            <span class="out">${d.dealt ?? 0} dealt</span>
+          </div>`);
+        }
+      }
+      else if (b.t === "damaged") {
+        if (lastDamagedIdx.get(b.who) !== bi) continue;   // one bar per victim per turn
+        const frac = b.hpMax ? Math.max(0, b.hp) / b.hpMax : 0;
+        const col = b.who === P ? "var(--s1)" : "var(--s2)";
+        beats.push(`<div class="beat hpafter">${who}
+          <span class="hpbar"><i style="width:${(frac * 100).toFixed(1)}%;background:${col}"></i></span>
+          <span style="color:var(--ink);font-weight:700">${b.hp}/${b.hpMax} HP</span></div>`);
+      }
+      else if (b.t === "dies") beats.push(`<div class="beat head" style="color:var(--crit);font-weight:700">${who} dies.</div>`);
+      else if (b.t === "wins") beats.push(`<div class="beat head" style="color:var(--good);font-weight:700">${who} wins the fight.</div>`);
+      else if (b.t === "raw") beats.push(`<div class="beat quiet">${esc(b.text)}</div>`);
+    }
+
+    if (!spent) {
+      const idleNote = [...(A.idle[A.P] || []), ...(A.idle[A.M] || [])].find(i => i.turn === t.n);
+      const g = t.beats.find(b => b.t === "gains");
+      if (idleNote && idleNote.short != null && idleNote.short > 0) {
+        beats.push(`<div class="beat quiet">${g ? `<span class="actor ${sideOf(A, g.who)}">${esc(g.who)}</span> ` : ""}banks moves —
+          holds ${r1(idleNote.movesLeft)}, an attack costs ${r1(idleNote.need)}. <b style="color:var(--warn)">Short ${r1(idleNote.short)}. Turn wasted.</b></div>`);
+      } else if (g) {
+        beats.push(`<div class="beat quiet"><span class="actor ${sideOf(A, g.who)}">${esc(g.who)}</span> banks moves — holds ${r1(g.movesLeft)}.</div>`);
+      }
+    }
+
+    return `<div class="turn ${!spent ? "idle" : ""} ${isKill ? "kill" : ""}">
+      <div class="gutter ${side}"><span class="stripe"></span><span class="tn">T${t.n}</span></div>
+      <div class="beats">${beats.join("")}</div>
+    </div>`;
+  })(t);
+}
+
+function renderBlocks(f, A) {
+  const P = A.P, M = A.M;
+  const ROWS = [
+    ["Hp", "Hit points"], ["Mana", "Mana"], ["Ac", "Armour (AC)"], ["Ev", "Evasion (EV)"],
+    ["Sh", "Shield (SH)"], ["Attack Speed", "Attack speed"], ["Melee Accuracy", "Melee accuracy"],
+    ["Xl", "Level (XL)"], ["Str", "Strength"], ["Dex", "Dexterity"], ["Int", "Intelligence"],
+    ["God", "God"], ["Resurrection", "Resurrections"], ["Stab Multiplier", "Stab multiplier"],
+  ];
+  const HIGHER_IS_BETTER = { "Ac": 1, "Ev": 1, "Sh": 1, "Hp": 1, "Melee Accuracy": 1, "Attack Speed": -1 };
+
+  const block = (name, side) => {
+    const e = f.entities[name] || {};
+    const other = f.entities[name === P ? M : P] || {};
+    const rows = ROWS.filter(([k]) => e[k] != null).map(([k, label]) => {
+      const mine = parseFloat(e[k]), theirs = parseFloat(other[k]);
+      let cls = "";
+      const dir = HIGHER_IS_BETTER[k.trim()] ?? HIGHER_IS_BETTER[k];
+      if (dir && Number.isFinite(mine) && Number.isFinite(theirs) && mine !== theirs) {
+        cls = ((mine > theirs) === (dir > 0)) ? "adv" : "dis";
+      }
+      return `<div>${label}</div><div class="${cls}">${esc(e[k])}</div>`;
+    }).join("");
+    const dmg = (e._damages || []).map(d =>
+      `<div>${esc(d.type.charAt(0).toUpperCase() + d.type.slice(1))} damage</div><div>${d.min}–${d.max}</div>`).join("");
+    const res = ["Rfire", "Rcold", "Rpois", "Relec", "Revil", "Racid"]
+      .filter(k => e[k] != null && +e[k] > 0)
+      .map(k => `${k.slice(1)} ${e[k]}`).join(" · ");
+    return `
+      <div class="panel block ${side}">
+        <header>
+          <span class="nm">${esc(name)}</span>
+          <span class="sub">${e._kind === "player" ? "Player" : "Monster"}</span>
+        </header>
+        <div class="kv">
+          ${dmg}
+          ${rows}
+          ${res ? `<div>Resistances</div><div style="font-weight:400;color:var(--ink-2)">${esc(res)}</div>` : ""}
+        </div>
+      </div>`;
+  };
+  $("blocks").innerHTML = block(P, "p") + block(M, "m");
+}
+
+const COMMANDS = [
+  { c: "dun fight",     d: "Explore and engage" },
+  { c: "dun pray",      d: "Offer to your god" },
+  { c: "dun stats",     d: "Your character sheet" },
+  { c: "dun inventory", d: "Carried items" },
+  { c: "dun rest",      d: "Recover HP and mana" },
+  { c: "dun skills",    d: "Skill training" },
+  { c: "dun equip",     d: "Change loadout" },
+  { c: "dun help",      d: "Full command list" },
+];
+
+function renderDeck() {
+  $("deck").innerHTML = COMMANDS.map((k, i) =>
+    `<button class="cmd" data-cmd="${esc(k.c)}" data-i="${i}">
+       <span class="c">${esc(k.c)}</span><span class="d">${esc(k.d)}</span>
+     </button>`).join("");
+
+  $("deck").addEventListener("click", async (e) => {
+    const btn = e.target.closest("button.cmd");
+    if (!btn) return;
+    const cmd = btn.dataset.cmd;
+    const label = btn.querySelector(".d");
+    const original = COMMANDS[+btn.dataset.i].d;
+    try {
+      await navigator.clipboard.writeText(cmd);
+      btn.classList.add("copied");
+      label.textContent = "Copied — paste in Discord";
+    } catch {
+      btn.classList.add("copied");
+      label.textContent = "Select and copy manually";
+    }
+    setTimeout(() => { btn.classList.remove("copied"); label.textContent = original; }, 1800);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   4. WIRE UP
+   ═══════════════════════════════════════════════════════════════ */
+
+const SAMPLE = `The fight happens between food_ and Greater Lizard!
+Stats for food_ ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 118
+  Mana Left: 13
+  - stats:
+    PlayerData:
+      Hp: 118
+      Mana: 13
+      Rfire: 1
+      Rcold: 1
+      Rpois: 0
+      Relec: 2
+      Revil: 1
+      Racid: 3
+      Spirit: 1
+      See Invis: 2
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 169
+      Ev: 7
+      Sh: 28
+      Damages: [DamageInfo(type=:punch: physical, min_amount=41, max_amount=138), DamageInfo(type=:green_circle: poison, min_amount=10, max_amount=34)]
+      Attack Speed: 1.4
+      Melee Accuracy: 4.0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 1.5
+      Effects Can Be Silenced: False
+      On Hit Effects: [OnHitEffect(effect_id=0, chance=20.0, power=5)]
+      Name: food_
+      Effect Power Level: 0
+      Spells: []
+      User Id: 123369068005818368
+      Resurrection: 2
+      God: Stcafetra
+      Str : 52
+      Dex: 10
+      Int : 12
+      Xl: 14
+  Melee Evade Chance: 32.0821300824607
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: food_
+  Is Silenced: False
+  Affected By Holy Damage: False
+Stats for Greater Lizard ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 98
+  Mana Left: 0
+  - stats:
+    MonsterData:
+      Hp: 98
+      Mana: 0
+      Rfire: 0
+      Rcold: 0
+      Rpois: 1
+      Relec: 0
+      Revil: 0
+      Racid: 0
+      Spirit: 0
+      See Invis: False
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 7
+      Ev: 37
+      Sh: 0
+      Damages: [DamageInfo(type=:punch: physical, min_amount=7, max_amount=25)]
+      Attack Speed: 1.2
+      Melee Accuracy: 0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 0.0
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: Greater Lizard
+      Effect Power Level: 0
+  Melee Evade Chance: 16.110894957658523
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: Greater Lizard
+  Is Silenced: False
+  Affected By Holy Damage: False
+Logs ------------------------------------------------------------------------------------------
+The distance between you is 8 tiles.
+[food_] starts first because [Greater Lizard] hasn't noticed them yet.
+TURN 1 ------------------------------------------------------------------------------------------
+[food_] sneaks 1 space closer but alerts [Greater Lizard]! Distance left = 7. Turn ended for [food_].
+[Greater Lizard] gains 1.0 moves. Moves left = 1.0. HP left: 98/98. Mana left: 0/0.
+[Greater Lizard] moves 1 space closer to [food_]. Distance left = 6.
+[Greater Lizard] uses 1.0 moves! Moves left = 0.0.
+TURN 3 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 118/118. Mana left: 13/13.
+[food_] moves 1 space closer to [Greater Lizard]. Distance left = 5.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 4 ------------------------------------------------------------------------------------------
+[Greater Lizard] gains 1.0 moves. Moves left = 1.0. HP left: 98/98. Mana left: 0/0.
+[Greater Lizard] moves 1 space closer to [food_]. Distance left = 4.
+[Greater Lizard] uses 1.0 moves! Moves left = 0.0.
+TURN 5 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 118/118. Mana left: 13/13.
+[food_] moves 1 space closer to [Greater Lizard]. Distance left = 3.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 6 ------------------------------------------------------------------------------------------
+[Greater Lizard] gains 1.0 moves. Moves left = 1.0. HP left: 98/98. Mana left: 0/0.
+[Greater Lizard] moves 1 space closer to [food_]. Distance left = 2.
+[Greater Lizard] uses 1.0 moves! Moves left = 0.0.
+TURN 7 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 118/118. Mana left: 13/13.
+[food_] moves 1 space closer to [Greater Lizard]. Distance left = 1.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 8 ------------------------------------------------------------------------------------------
+[Greater Lizard] gains 1.0 moves. Moves left = 1.0. HP left: 98/98. Mana left: 0/0.
+[Greater Lizard] moves 1 space closer to [food_]. Distance left = 0.
+[Greater Lizard] uses 1.0 moves! Moves left = 0.0.
+TURN 9 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 118/118. Mana left: 13/13.
+TURN 10 ------------------------------------------------------------------------------------------
+[Greater Lizard] gains 1.0 moves. Moves left = 1.0. HP left: 98/98. Mana left: 0/0.
+TURN 11 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 2.0. HP left: 118/118. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 15.64739 <= 16.11089]
+[food_] uses 1.40 moves! Moves left = 0.6000000000000001.
+TURN 12 ------------------------------------------------------------------------------------------
+[Greater Lizard] gains 1.0 moves. Moves left = 2.0. HP left: 98/98. Mana left: 0/0.
+[Greater Lizard] hits [food_] with a melee attack! Applying each damage. [evade roll: 57.57734 > 32.08213].
+[Greater Lizard] rolls 24 for :punch: physical!
+[food_] rolls 140 for AC and reduces the damage by 140! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 117/118.
+[Greater Lizard] uses 1.20 moves! Moves left = 0.8.
+TURN 13 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.6. HP left: 117/118. Mana left: 13/13.
+[food_] hits [Greater Lizard] with a melee attack! Applying each damage. [evade roll: 97.23417 > 16.11089].
+[food_] rolls 46 for :punch: physical!
+[Greater Lizard] rolls 4 for AC and reduces the damage by 4! Damage Left = 42
+[Greater Lizard] gets damaged by 42 damage! HP Left = 56/98.
+[food_] rolls 23 for :green_circle: poison!
+[Greater Lizard] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 20
+[Greater Lizard] rolls 5 for AC and reduces the damage by 5! Damage Left = 15
+[Greater Lizard] gets damaged by 15 damage! HP Left = 41/98.
+[food_] uses 1.40 moves! Moves left = 0.20000000000000018.
+TURN 14 ------------------------------------------------------------------------------------------
+[Greater Lizard] gains 1.0 moves. Moves left = 1.8. HP left: 41/98. Mana left: 0/0.
+[Greater Lizard] hits [food_] with a melee attack! Applying each damage. [evade roll: 48.01741 > 32.08213].
+[Greater Lizard] rolls 7 for :punch: physical!
+[food_] rolls 132 for AC and reduces the damage by 132! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 116/118.
+[Greater Lizard] uses 1.20 moves! Moves left = 0.6000000000000001.
+TURN 15 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.2000000000000002. HP left: 116/118. Mana left: 13/13.
+TURN 16 ------------------------------------------------------------------------------------------
+[Greater Lizard] gains 1.0 moves. Moves left = 1.6. HP left: 41/98. Mana left: 0/0.
+[Greater Lizard] hits [food_] with a melee attack! Applying each damage. [evade roll: 89.58033 > 32.08213].
+[Greater Lizard] rolls 20 for :punch: physical!
+[food_] rolls 107 for AC and reduces the damage by 107! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 115/118.
+[Greater Lizard] uses 1.20 moves! Moves left = 0.40000000000000013.
+TURN 17 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 2.2. HP left: 115/118. Mana left: 13/13.
+[food_] hits [Greater Lizard] with a melee attack! Applying each damage. [evade roll: 67.60178 > 16.11089].
+[food_] rolls 60 for :punch: physical!
+[Greater Lizard] rolls 7 for AC and reduces the damage by 7! Damage Left = 53
+[Greater Lizard] gets damaged by 53 damage! HP Left = -12/98.
+[food_] rolls 15 for :green_circle: poison!
+[Greater Lizard] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 13
+[Greater Lizard] rolls 3 for AC and reduces the damage by 3! Damage Left = 10
+[Greater Lizard] gets damaged by 10 damage! HP Left = -22/98.
+[food_] uses 1.40 moves! Moves left = 0.8000000000000003.
+[Greater Lizard] dies!
+[food_] wins the fight because [Greater Lizard] has died!`;
+
+function run(text) {
+  const st = $("status");
+  try {
+    const f = parseFight(text);
+    const A = analyze(f);
+    renderFight(f, A);
+    renderTiles(f, A);
+    renderReads(f, A);
+    renderChart(f, A);
+    renderTurnLog(f, A);
+    renderBlocks(f, A);
+    st.className = "status";
+    st.textContent = `Parsed ${A.events} events across ${A.turnsSeen.length} turns.`;
+  } catch (err) {
+    st.className = "status err";
+    st.textContent = err.message;
+  }
+}
+
+$("logInput").value = SAMPLE;
+$("parseBtn").addEventListener("click", () => run($("logInput").value));
+renderDeck();
+run(SAMPLE);
+</script>
