@@ -9,10 +9,14 @@
     "apps/*"
   ],
   "scripts": {
+    "sample": "node scripts/make-sample.mjs",
+    "check:sample": "node scripts/make-sample.mjs --check",
+    "prebuild": "npm run check:sample",
     "build": "npm run build -w @dundor/parser && npm run build -w @dundor/web",
-    "dev": "npm run dev -w @dundor/web",
+    "pretest": "npm run check:sample",
     "test": "npm run test -w @dundor/parser",
+    "dev": "npm run dev -w @dundor/web",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "deploy": "npm run deploy -w @dundor/web"
+    "deploy": "npm run build && npm run publish:cf -w @dundor/web"
   }
 }

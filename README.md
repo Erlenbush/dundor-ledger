@@ -32,6 +32,25 @@ To check the exact runtime locally before publishing:
 npm run cf:preview -w @dundor/web   # serves the build through workerd on :8787
 ```
 
+### What ships publicly
+
+The bundle carries a built-in sample fight so the app has something to show on
+first load. It is generated from `fixtures/lava-golem-xl24.txt` with the player
+name, god and Discord user ID scrubbed:
+
+```
+npm run sample          # regenerate from the fixture
+npm run check:sample    # verify the committed file is still clean
+```
+
+`build` and `test` both run the check first, so a hand-edit that reintroduces
+personal data fails rather than shipping. The fixtures keep their real values —
+the repo is private and the parser tests assert against them.
+
+Source maps are off for production builds, since a map would publish every
+`.ts` file verbatim. Flip `sourcemap` in `apps/web/vite.config.ts` if you would
+rather have readable stack traces.
+
 ## Workflow
 
 Dundor emits the verbose log only on request, as an attached `.txt`:
