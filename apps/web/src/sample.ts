@@ -1,5 +1,9 @@
-// The XL 24 Lava Golem fight, verbatim from fixtures/lava-golem-xl24.txt.
+// The XL 24 Lava Golem fight, from fixtures/lava-golem-xl24.txt.
 // Kept inline so the app has something to show on first load with no network.
+//
+// The Discord user ID is REDACTED. This file is compiled into the public
+// bundle, and a snowflake resolves to a real account. Combat numbers are
+// untouched — the fixtures keep the real value for the parser tests.
 export const SAMPLE = `The fight happens between food_ and Lava Golem!
 Stats for food_ ------------------------------------------------------------------------------------------
 FightEntity:
@@ -35,7 +39,7 @@ FightEntity:
       Name: food_
       Effect Power Level: 0
       Spells: []
-      User Id: 123369068005818368
+      User Id: 000000000000000000
       Resurrection: 2
       God: Stcafetra
       Str : 57
