@@ -455,10 +455,18 @@
   .block.m header .nm { color: var(--s2); }
   .block header .sub { font-size: 11px; color: var(--ink-3); letter-spacing: .08em; text-transform: uppercase; }
   .kv { display: grid; grid-template-columns: 1fr auto; gap: 0; }
-  .kv > div { padding: 7px 18px; border-bottom: 1px solid var(--rule-soft); font-size: 12.5px; }
+  .kv > div { padding: 7px 18px; border-bottom: 1px solid var(--rule-soft); font-size: 12.5px; white-space: nowrap; }
   .kv > div:nth-child(odd) { color: var(--ink-2); }
   .kv > div:nth-child(even) { text-align: right; font-weight: 700; }
   .kv .adv { color: var(--good); }
+  /* Resistances live outside .kv — their long values were stretching the shared
+     value column and wrapping every label in the grid. */
+  .resblock { padding: 10px 18px 13px; display: flex; flex-direction: column; gap: 8px; border-top: 1px solid var(--rule); }
+  .rline { display: flex; flex-direction: column; gap: 2px; }
+  .rline .rk { font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .rline .rv { font-size: 12.5px; color: var(--ink-2); }
+  .rline.vuln .rk { color: var(--crit); }
+  .rline.vuln .rv { color: var(--crit); font-weight: 700; }
   .kv .dis { color: var(--crit); }
 
   /* ── command deck ──────────────────────────────────────────── */
@@ -714,6 +722,23 @@ const RE = {
 
 const num = (s) => { const n = parseFloat(s); return Number.isFinite(n) ? n : null; };
 
+// Resistance pips. Every reduction observed in real logs is 100/6 % per pip
+// (1 pip -> 16.67%, 2 pips -> 33.33%), and a NEGATIVE value is a vulnerability.
+const RES_KEYS = [["Rfire", "fire"], ["Rcold", "cold"], ["Rpois", "poison"],
+                  ["Relec", "electric"], ["Revil", "evil"], ["Racid", "acid"]];
+const PIP_PCT = 100 / 6;
+
+// One paste or file can hold a whole session - Dundor repeats the "The fight
+// happens between" header per fight. Split on it, or every fight merges into one
+// bogus record with duplicated turn numbers and doubled damage.
+function splitLogs(text) {
+  const lines = text.replace(/\r/g, "").split("\n");
+  const starts = [];
+  lines.forEach((l, i) => { if (RE.header.test(l.trim())) starts.push(i); });
+  if (starts.length < 2) return [text];
+  return starts.map((s, i) => lines.slice(s, starts[i + 1] ?? lines.length).join("\n"));
+}
+
 function parseStatLines(lines) {
   // The stat dump is indented "Key: value" pairs across nested blocks.
   // We flatten — key names are unique enough within one entity.
@@ -793,6 +818,10 @@ function parseFight(text) {
     const line = lines[i].trim();
     if (!line) continue;
     let m;
+
+    // A second header means the next fight in a multi-fight paste. Stop here so
+    // a direct parseFight() call can never bleed one fight into another.
+    if (RE.header.test(line)) break;
 
     if ((m = line.match(RE.turn)))    { pushTurn(+m[1]); pending = null; lastAttack = null; continue; }
     if ((m = line.match(RE.dist)))    { fight.startDistance = +m[1]; continue; }
@@ -883,7 +912,9 @@ function parseFight(text) {
 
 function analyze(f) {
   const P = f.playerName, M = f.monsterName;
-  const blank = () => ({ attacks: 0, hits: 0, misses: 0, rawRolled: 0, dealt: 0, acAbsorbedByFoe: 0, resistAbsorbedByFoe: 0, flooredHits: 0, byType: {}, nearMisses: [] });
+  const blank = () => ({ attacks: 0, hits: 0, misses: 0, rawRolled: 0, dealt: 0,
+    acAbsorbedByFoe: 0, resistAbsorbedByFoe: 0, flooredHits: 0,
+    byType: {}, rawByType: {}, resistLossByType: {}, nearMisses: [], nearHits: [] });
   const s = { [P]: blank(), [M]: blank() };
   const idle = { [P]: [], [M]: [] };
   const acted = new Map();          // turn -> Set(who) that spent moves
@@ -924,21 +955,28 @@ function analyze(f) {
         if (firstAttackTurn === null) firstAttackTurn = t.n;
       }
       if (b.t === "hit" && s[b.who]) {
-        s[b.who].attacks++; s[b.who].hits++;
+        const S = s[b.who];
+        S.attacks++; S.hits++;
         if (firstAttackTurn === null) firstAttackTurn = t.n;
+        // Landed by a hair - the mirror of a near miss, and just as informative.
+        const hitMargin = b.roll - b.threshold;
+        if (hitMargin < 2) S.nearHits.push({ turn: t.n, margin: hitMargin, roll: b.roll, threshold: b.threshold });
         for (const d of b.damages) {
-          s[b.who].rawRolled += d.raw;
+          S.rawRolled += d.raw;
           const dealt = d.dealt ?? 0;
-          s[b.who].dealt += dealt;
-          if (d.acCut) s[b.who].acAbsorbedByFoe += d.acCut;
+          S.dealt += dealt;
+          if (d.acCut) S.acAbsorbedByFoe += d.acCut;
+          let resistLoss = 0;
           if (d.afterResist != null && d.resistPct != null) {
-            const before = d.raw;
-            s[b.who].resistAbsorbedByFoe += Math.max(0, before - d.afterResist);
+            resistLoss = Math.max(0, d.raw - d.afterResist);
+            S.resistAbsorbedByFoe += resistLoss;
           }
           // A hit is "floored" when AC would have wiped it out but 1 damage got through.
-          if (d.acCut != null && dealt === 1 && (d.afterResist ?? d.raw) - d.acCut < 1) s[b.who].flooredHits++;
+          if (d.acCut != null && dealt === 1 && (d.afterResist ?? d.raw) - d.acCut < 1) S.flooredHits++;
           const k = d.type;
-          s[b.who].byType[k] = (s[b.who].byType[k] || 0) + dealt;
+          S.byType[k] = (S.byType[k] || 0) + dealt;
+          S.rawByType[k] = (S.rawByType[k] || 0) + d.raw;
+          S.resistLossByType[k] = (S.resistLossByType[k] || 0) + resistLoss;
         }
       }
       if (b.t === "damaged" && b.who in hpTrack) hpTrack[b.who] = b.hp;
@@ -1129,6 +1167,20 @@ function renderReads(f, A) {
           you are meaningfully over-geared for this tier. Deeper dungeons, not better rolls, are the constraint now.` });
   }
 
+  // Rolls decided by a hair, in either direction.
+  const razor = [
+    ...A.s[P].nearHits.map(n => ({ ...n, who: P, landed: true })),
+    ...A.s[M].nearHits.map(n => ({ ...n, who: M, landed: true })),
+    ...A.s[M].nearMisses.filter(n => n.margin < 2).map(n => ({ ...n, who: M, landed: false })),
+  ].sort((a, b) => a.margin - b.margin)[0];
+  if (razor) {
+    reads.push({ sev: "note", tag: "Coin flip", h: `Turn ${razor.turn} came down to ${razor.margin.toFixed(3)}.`,
+      p: `${razor.who === P ? "Your" : `The ${esc(M)}'s`} evade roll was <b>${razor.roll.toFixed(5)}</b>
+          against a threshold of <b>${razor.threshold.toFixed(5)}</b> \u2014 it
+          ${razor.landed ? "landed" : "missed"} by <b>${razor.margin.toFixed(3)}</b>. Dundor rolls these to
+          five decimals, so outcomes this tight are settled far below anything the summary shows you.` });
+  }
+
   const nm = A.s[P].nearMisses.filter(n => n.margin < 2).sort((a, b) => a.margin - b.margin)[0];
   if (nm) {
     reads.push({ sev: "warn", tag: "Variance", h: `Your turn-${nm.turn} miss failed by ${nm.margin.toFixed(2)}.`,
@@ -1136,6 +1188,31 @@ function renderReads(f, A) {
           margin of ${nm.margin.toFixed(2)}. Its evasion of ${f.entities[M]?.Ev} against your melee accuracy of
           ${f.entities[P]?.["Melee Accuracy"]} gives it a ${r1(nm.threshold)}% dodge; that is the whole reason this
           took an extra two turns.` });
+  }
+
+  // Element matchup: what it resists, what it is weak to, and what swapping your
+  // secondary element would actually have been worth in this fight.
+  const vulnList = RES_KEYS.filter(([k]) => +f.entities[M]?.[k] < 0);
+  if (vulnList.length) {
+    const [vk, vname] = vulnList[0];
+    const vPct = Math.abs(+f.entities[M][vk]) * PIP_PCT;
+    const sec = Object.entries(A.s[P].rawByType).filter(([t]) => t !== "physical")
+      .sort((a, b) => b[1] - a[1])[0];
+    const heavyResist = RES_KEYS.filter(([k]) => +f.entities[M]?.[k] >= 3).map(([, n]) => n);
+    let quant = "";
+    if (sec) {
+      const [secName, secRaw] = sec;
+      const lost = A.s[P].resistLossByType[secName] || 0;
+      const gain = Math.round(secRaw * vPct / 100);
+      quant = `Your ${esc(secName)} rolled <b>${secRaw}</b> raw here and lost <b>${lost}</b> to resistance.
+               The same rolls as ${esc(vname)} would have <em>gained</em> about <b>${gain}</b> instead \u2014
+               a swing of roughly <b>${lost + gain}</b> damage, for free.`;
+    }
+    reads.push({ sev: "crit", tag: "Matchup", h: `${esc(M)} is vulnerable to ${esc(vname)} \u2014 and you brought none.`,
+      p: `Its block lists <b>${vk} ${f.entities[M][vk]}</b>, so ${esc(vname)} lands about
+          <b>${Math.round(vPct)}% harder</b>${heavyResist.length ? `, while it shrugs off ${heavyResist.map(esc).join(" and ")}` : ""}.
+          ${quant} This is the highest-leverage change available to you, and nothing in the fight
+          summary would ever tell you it exists.` });
   }
 
   const types = Object.entries(A.s[P].byType).sort((a, b) => b[1] - a[1]);
@@ -1421,9 +1498,12 @@ function renderBlocks(f, A) {
     }).join("");
     const dmg = (e._damages || []).map(d =>
       `<div>${esc(d.type.charAt(0).toUpperCase() + d.type.slice(1))} damage</div><div>${d.min}–${d.max}</div>`).join("");
-    const res = ["Rfire", "Rcold", "Rpois", "Relec", "Revil", "Racid"]
-      .filter(k => e[k] != null && +e[k] > 0)
-      .map(k => `${k.slice(1)} ${e[k]}`).join(" · ");
+    const resists = RES_KEYS.filter(([k]) => +e[k] > 0)
+      .map(([k, name]) => `${name} ${e[k]} <span style="opacity:.6">(&minus;${Math.round(+e[k] * PIP_PCT)}%)</span>`).join(" · ");
+    // Negative pips are vulnerabilities - the most actionable line in a monster's
+    // block, so it gets its own row instead of being filtered out entirely.
+    const vulns = RES_KEYS.filter(([k]) => +e[k] < 0)
+      .map(([k, name]) => `${name} ${e[k]} <span style="opacity:.75">(+${Math.round(Math.abs(+e[k]) * PIP_PCT)}%)</span>`).join(" · ");
     return `
       <div class="panel block ${side}">
         <header>
@@ -1433,8 +1513,11 @@ function renderBlocks(f, A) {
         <div class="kv">
           ${dmg}
           ${rows}
-          ${res ? `<div>Resistances</div><div style="font-weight:400;color:var(--ink-2)">${esc(res)}</div>` : ""}
         </div>
+        ${(resists || vulns) ? `<div class="resblock">
+          ${resists ? `<div class="rline"><span class="rk">Resists</span><span class="rv">${resists}</span></div>` : ""}
+          ${vulns ? `<div class="rline vuln"><span class="rk">Vulnerable to</span><span class="rv">${vulns}</span></div>` : ""}
+        </div>` : ""}
       </div>`;
   };
   $("blocks").innerHTML = block(P, "p") + block(M, "m");
@@ -1733,7 +1816,18 @@ function renderSession() {
 
 function load(items) {   // items: [{ label, text }]
   const st = $("status");
-  const parsed = items.map(it => {
+
+  // A single file or paste may hold several fights back to back.
+  const expanded = [];
+  for (const it of items) {
+    const chunks = splitLogs(it.text);
+    chunks.forEach((text, i) => expanded.push({
+      label: chunks.length > 1 ? `${it.label} \u00b7 fight ${i + 1}` : it.label,
+      text,
+    }));
+  }
+
+  const parsed = expanded.map(it => {
     try {
       const f = parseFight(it.text);
       return { label: it.label, f, A: analyze(f) };
@@ -1750,7 +1844,7 @@ function load(items) {   // items: [{ label, text }]
     st.className = "status err";
     st.textContent = parsed.length === 1
       ? parsed[0].error
-      : `None of those ${parsed.length} files are Dundor fight logs.`;
+      : `Nothing in those ${parsed.length} sections is a Dundor fight log.`;
     return;
   }
 

@@ -27,7 +27,8 @@ With more than one loaded you also get a **Session totals** panel and a fight sw
 | Parser | `index.html` § 1 | Pure function: raw log text → structured fight object. No DOM, no deps. |
 | Analytics | `index.html` § 2 | Derived metrics only — no hardcoded numbers. |
 | Render | `index.html` § 3 | Telemetry tiles, insight cards, HP chart, turn log, stat blocks. |
-| Smoke test | `parser-smoke-test.mjs` | Extracts §1–2 from the HTML and asserts against the sample fight. |
+| Smoke test | `parser-smoke-test.mjs` | Extracts §1–2 from the HTML and asserts against real fixtures. |
+| Fixtures | `fixtures/` | Real logs: three Lava Golem fights at XL 24/25/26, plus two fights in one paste. |
 
 ```
 node parser-smoke-test.mjs
@@ -45,6 +46,16 @@ Two things the raw log gets wrong if you read it literally, both handled:
   mitigation. Real absorption is `raw − dealt`.
 - **Turn numbers are not contiguous.** The sample jumps from `TURN 1` to `TURN 3`.
   Never assume a dense sequence.
+- **One paste can hold many fights.** Dundor repeats the `The fight happens between`
+  header per fight. Without splitting on it, fights merge into one record with
+  duplicated turn numbers and doubled damage. `splitLogs()` handles this, and
+  `parseFight()` also stops at the next header as a second line of defence.
+- **Negative resistance is a vulnerability.** A Lava Golem's `Rcold: -2` means cold
+  lands ~33% harder. Filtering the resistance table to positive values hides the
+  single most actionable fact about a monster.
+
+Each resistance pip is 100/6 % (1 pip → 16.67%, 2 pips → 33.33%), consistent across
+every log observed so far.
 
 Handled input shapes: full output (stats + logs), logs section only, header without
 stat blocks, losses, and monsters whose max HP is never declared.

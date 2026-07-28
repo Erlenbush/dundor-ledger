@@ -17,7 +17,7 @@ const sStart = body.indexOf('const SAMPLE = `');
 const sampleSrc = body.slice(sStart, body.indexOf('`;', sStart) + 2);
 
 const tmp = path.join(here, '.parser.mjs');
-fs.writeFileSync(tmp, `${parserSrc}\n${sampleSrc}\nexport { parseFight, analyze, SAMPLE };`);
+fs.writeFileSync(tmp, `${parserSrc}\n${sampleSrc}\nexport { parseFight, analyze, splitLogs, SAMPLE };`);
 
 let mod;
 try {
@@ -25,7 +25,7 @@ try {
 } finally {
   fs.rmSync(tmp, { force: true });
 }
-const { parseFight, analyze, SAMPLE } = mod;
+const { parseFight, analyze, splitLogs, SAMPLE } = mod;
 
 const f = parseFight(SAMPLE);
 const A = analyze(f);
@@ -111,5 +111,61 @@ const logsOnly = parseFight([
 check('logs-only: player', logsOnly.playerName, 'hero');
 check('logs-only: monster', logsOnly.monsterName, 'goblin');
 check('logs-only: HP recovered from log', [logsOnly.maxHp.hero, logsOnly.maxHp.goblin], [40, 15]);
+
+
+// ── Real fixtures: three Lava Golem fights at XL 24/25/26 ────────────────────
+const fx = (name) => fs.readFileSync(path.join(here, 'fixtures', name), 'utf8');
+
+console.log('multi-fight paste');
+const pairText = fx('two-fights-one-paste.txt');
+const chunks = splitLogs(pairText);
+check('splits into fights', chunks.length, 2);
+
+// Regression: before splitLogs, this produced turnsSeen 1,3..19,1,3..15 and
+// reported 471 damage dealt instead of 211 — two fights silently merged.
+const merged = analyze(parseFight(pairText));
+check('direct parse stops at fight 1', merged.totalTurns, 19);
+check('no duplicated turns', merged.turnsSeen.length, new Set(merged.turnsSeen).size);
+check('damage not doubled', merged.s[merged.P].dealt, 211);
+
+const golem = ['lava-golem-xl24.txt', 'lava-golem-xl25.txt', 'lava-golem-xl26.txt']
+  .map(n => { const f = parseFight(fx(n)); return { f, A: analyze(f) }; });
+
+console.log('per-fight totals (XL 24 / 25 / 26)');
+check('levels', golem.map(g => g.f.entities[g.A.P].Xl), ['24', '25', '26']);
+check('max HP climbs', golem.map(g => g.f.maxHp[g.A.P]), [231, 241, 254]);
+check('turns', golem.map(g => g.A.totalTurns), [19, 15, 17]);
+check('damage dealt', golem.map(g => g.A.s[g.A.P].dealt), [211, 260, 395]);
+check('damage taken', golem.map(g => g.A.mitP.taken), [12, 6, 4]);
+check('overkill', golem.map(g => g.A.overkill), [11, 60, 195]);
+
+console.log('two-element attacker');
+// The golem swings physical AND fire; both must be attributed separately.
+const g1 = golem[0];
+check('monster damage types', g1.f.entities[g1.A.M]._damages.map(d => d.type), ['physical', 'fire']);
+check('incoming raw across both elements', g1.A.mitP.incomingRaw, 434);
+check('all incoming floored to 1', g1.A.mitP.flooredHits, 12);
+
+console.log('resistances and vulnerabilities');
+check('golem resists fire', g1.f.entities[g1.A.M].Rfire, '4');
+check('golem resists poison', g1.f.entities[g1.A.M].Rpois, '2');
+// Negative pips were previously filtered out of the stat block entirely.
+check('golem is COLD-VULNERABLE', g1.f.entities[g1.A.M].Rcold, '-2');
+// 2 pips of poison resistance removed 33.33% -> 100/6 per pip.
+check('poison raw rolled', g1.A.s[g1.A.P].rawByType.poison, 66);
+check('poison lost to resistance', g1.A.s[g1.A.P].resistLossByType.poison, 21);
+check('physical lost nothing', g1.A.s[g1.A.P].resistLossByType.physical, 0);
+
+console.log('razor-thin rolls');
+// Landed by 0.014 — a near HIT, which the miss-only logic could never surface.
+check('XL24 near-hit turn', g1.A.s[g1.A.P].nearHits.map(h => h.turn), [11]);
+check('XL24 near-hit margin', +g1.A.s[g1.A.P].nearHits[0].margin.toFixed(5), 0.01402);
+const g3 = golem[2];
+check('XL26 monster near-miss margin',
+  +g3.A.s[g3.A.M].nearMisses.filter(x => x.margin < 2)[0].margin.toFixed(5), 0.23826);
+
+console.log('move economy at low attack speed');
+// Speed 1.06-1.09 vs 1.0 regen: one stalled turn each, not the 1.4 weapon's many.
+check('stalls per fight', golem.map(g => (g.A.idle[g.A.P] || []).length), [1, 1, 1]);
 
 console.log(`\n${n} assertions passed.`);

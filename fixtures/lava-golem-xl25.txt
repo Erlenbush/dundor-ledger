@@ -1,0 +1,180 @@
+The fight happens between food_ and Lava Golem!
+Stats for food_ ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 241
+  Mana Left: 13
+  - stats:
+    PlayerData:
+      Hp: 241
+      Mana: 13
+      Rfire: 1
+      Rcold: 1
+      Rpois: 0
+      Relec: 2
+      Revil: 1
+      Racid: 3
+      Spirit: 1
+      See Invis: 2
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 198
+      Ev: 9
+      Sh: 28
+      Damages: [DamageInfo(type=:punch: physical, min_amount=60, max_amount=203), DamageInfo(type=:green_circle: poison, min_amount=15, max_amount=51)]
+      Attack Speed: 1.08
+      Melee Accuracy: 4.0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 1.5
+      Effects Can Be Silenced: False
+      On Hit Effects: [OnHitEffect(effect_id=0, chance=20.0, power=5)]
+      Name: food_
+      Effect Power Level: 0
+      Spells: []
+      User Id: 123369068005818368
+      Resurrection: 2
+      God: Stcafetra
+      Str : 57
+      Dex: 10
+      Int : 12
+      Xl: 25
+  Melee Evade Chance: 28.905049737499603
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: food_
+  Is Silenced: False
+  Affected By Holy Damage: False
+Stats for Lava Golem ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 200
+  Mana Left: 0
+  - stats:
+    MonsterData:
+      Hp: 200
+      Mana: 0
+      Rfire: 4
+      Rcold: -2
+      Rpois: 2
+      Relec: 0
+      Revil: 0
+      Racid: 0
+      Spirit: 0
+      See Invis: False
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 10
+      Ev: 25
+      Sh: 25
+      Damages: [DamageInfo(type=:punch: physical, min_amount=4, max_amount=15), DamageInfo(type=:fire: fire, min_amount=30, max_amount=100)]
+      Attack Speed: 1.0
+      Melee Accuracy: 1
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 0.0
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: Lava Golem
+      Effect Power Level: 0
+  Melee Evade Chance: 26.894142136999513
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: Lava Golem
+  Is Silenced: False
+  Affected By Holy Damage: False
+Logs ------------------------------------------------------------------------------------------
+The distance between you is 7 tiles.
+[food_] starts first because [Lava Golem] hasn't noticed them yet.
+TURN 1 ------------------------------------------------------------------------------------------
+[food_] sneaks 1 space closer but alerts [Lava Golem]! Distance left = 6. Turn ended for [food_].
+[Lava Golem] gains 1.0 moves. Moves left = 1.0. HP left: 200/200. Mana left: 0/0.
+[Lava Golem] moves 1 space closer to [food_]. Distance left = 5.
+[Lava Golem] uses 1.0 moves! Moves left = 0.0.
+TURN 3 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 241/241. Mana left: 13/13.
+[food_] moves 1 space closer to [Lava Golem]. Distance left = 4.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 4 ------------------------------------------------------------------------------------------
+[Lava Golem] gains 1.0 moves. Moves left = 1.0. HP left: 200/200. Mana left: 0/0.
+[Lava Golem] moves 1 space closer to [food_]. Distance left = 3.
+[Lava Golem] uses 1.0 moves! Moves left = 0.0.
+TURN 5 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 241/241. Mana left: 13/13.
+[food_] moves 1 space closer to [Lava Golem]. Distance left = 2.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 6 ------------------------------------------------------------------------------------------
+[Lava Golem] gains 1.0 moves. Moves left = 1.0. HP left: 200/200. Mana left: 0/0.
+[Lava Golem] moves 1 space closer to [food_]. Distance left = 1.
+[Lava Golem] uses 1.0 moves! Moves left = 0.0.
+TURN 7 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 241/241. Mana left: 13/13.
+[food_] moves 1 space closer to [Lava Golem]. Distance left = 0.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 8 ------------------------------------------------------------------------------------------
+[Lava Golem] gains 1.0 moves. Moves left = 1.0. HP left: 200/200. Mana left: 0/0.
+[Lava Golem] hits [food_] with a melee attack! Applying each damage. [evade roll: 82.70793 > 28.90505].
+[Lava Golem] rolls 9 for :punch: physical!
+[food_] rolls 127 for AC and reduces the damage by 127! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 240/241.
+[Lava Golem] rolls 91 for :fire: fire!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 76
+[food_] rolls 114 for AC and reduces the damage by 114! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 239/241.
+[Lava Golem] uses 1.00 moves! Moves left = 0.0.
+TURN 9 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 239/241. Mana left: 13/13.
+TURN 10 ------------------------------------------------------------------------------------------
+[Lava Golem] gains 1.0 moves. Moves left = 1.0. HP left: 200/200. Mana left: 0/0.
+[Lava Golem] tries attacking in melee but misses! [evade roll: 14.04509 <= 28.90505]
+[Lava Golem] uses 1.00 moves! Moves left = 0.0.
+TURN 11 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 2.0. HP left: 239/241. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 23.10266 <= 26.89414]
+[food_] uses 1.08 moves! Moves left = 0.9199999999999999.
+TURN 12 ------------------------------------------------------------------------------------------
+[Lava Golem] gains 1.0 moves. Moves left = 1.0. HP left: 200/200. Mana left: 0/0.
+[Lava Golem] hits [food_] with a melee attack! Applying each damage. [evade roll: 75.80425 > 28.90505].
+[Lava Golem] rolls 5 for :punch: physical!
+[food_] rolls 195 for AC and reduces the damage by 195! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 238/241.
+[Lava Golem] rolls 45 for :fire: fire!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 38
+[food_] rolls 138 for AC and reduces the damage by 138! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 237/241.
+[Lava Golem] uses 1.00 moves! Moves left = 0.0.
+TURN 13 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.92. HP left: 237/241. Mana left: 13/13.
+[food_] hits [Lava Golem] with a melee attack! Applying each damage. [evade roll: 63.60960 > 26.89414].
+[food_] rolls 78 for :punch: physical!
+[Lava Golem] rolls 7 for AC and reduces the damage by 7! Damage Left = 71
+[Lava Golem] gets damaged by 71 damage! HP Left = 129/200.
+[food_] rolls 51 for :green_circle: poison!
+[Lava Golem] reduces the damage by 33.33% because of their resistance to this element! Damage Left = 34
+[Lava Golem] rolls 10 for AC and reduces the damage by 10! Damage Left = 24
+[Lava Golem] gets damaged by 24 damage! HP Left = 105/200.
+[food_] uses 1.08 moves! Moves left = 0.8399999999999999.
+TURN 14 ------------------------------------------------------------------------------------------
+[Lava Golem] gains 1.0 moves. Moves left = 1.0. HP left: 105/200. Mana left: 0/0.
+[Lava Golem] hits [food_] with a melee attack! Applying each damage. [evade roll: 34.17975 > 28.90505].
+[Lava Golem] rolls 15 for :punch: physical!
+[food_] rolls 187 for AC and reduces the damage by 187! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 236/241.
+[Lava Golem] rolls 98 for :fire: fire!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 82
+[food_] rolls 103 for AC and reduces the damage by 103! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 235/241.
+[Lava Golem] uses 1.00 moves! Moves left = 0.0.
+TURN 15 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.8399999999999999. HP left: 235/241. Mana left: 13/13.
+[food_] hits [Lava Golem] with a melee attack! Applying each damage. [evade roll: 72.34033 > 26.89414].
+[food_] rolls 158 for :punch: physical!
+[Lava Golem] rolls 5 for AC and reduces the damage by 5! Damage Left = 153
+[Lava Golem] gets damaged by 153 damage! HP Left = -48/200.
+[food_] rolls 27 for :green_circle: poison!
+[Lava Golem] reduces the damage by 33.33% because of their resistance to this element! Damage Left = 18
+[Lava Golem] rolls 6 for AC and reduces the damage by 6! Damage Left = 12
+[Lava Golem] gets damaged by 12 damage! HP Left = -60/200.
+[food_] uses 1.08 moves! Moves left = 0.7599999999999998.
+[Lava Golem] dies!
+[food_] wins the fight because [Lava Golem] has died!
