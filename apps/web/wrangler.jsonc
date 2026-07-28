@@ -1,0 +1,18 @@
+{
+  "$schema": "../../node_modules/wrangler/config-schema.json",
+  "name": "dundor-ledger",
+  "compatibility_date": "2026-07-28",
+
+  // Assets-only Worker: there is no server side. Every log is parsed in the
+  // browser, so nothing is uploaded and there is no backend to run.
+  "assets": {
+    "directory": "./dist",
+    // The app is a single page with no router, but this keeps any deep link
+    // (or a stray trailing path) serving index.html rather than a 404.
+    "not_found_handling": "single-page-application"
+  },
+
+  "observability": {
+    "enabled": true
+  }
+}

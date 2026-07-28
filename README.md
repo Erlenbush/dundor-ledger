@@ -9,6 +9,27 @@ npm install
 npm test        # parser suite
 npm run dev     # web app on :5173
 npm run build   # parser to dist/, app to apps/web/dist/
+npm run deploy  # build + publish to Cloudflare Workers
+```
+
+## Deploying
+
+The app is entirely static — every log is parsed in the browser, so there is no
+backend and nothing is ever uploaded. It deploys as an assets-only Cloudflare
+Worker (`apps/web/wrangler.jsonc`).
+
+```
+npx wrangler login    # once, opens a browser
+npm run deploy
+```
+
+That publishes to `https://dundor-ledger.<your-subdomain>.workers.dev`. Change the
+`name` in `apps/web/wrangler.jsonc` to change the hostname.
+
+To check the exact runtime locally before publishing:
+
+```
+npm run cf:preview -w @dundor/web   # serves the build through workerd on :8787
 ```
 
 ## Workflow

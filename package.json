@@ -12,6 +12,7 @@
     "build": "npm run build -w @dundor/parser && npm run build -w @dundor/web",
     "dev": "npm run dev -w @dundor/web",
     "test": "npm run test -w @dundor/parser",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "deploy": "npm run deploy -w @dundor/web"
   }
 }
