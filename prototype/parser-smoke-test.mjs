@@ -114,7 +114,7 @@ check('logs-only: HP recovered from log', [logsOnly.maxHp.hero, logsOnly.maxHp.g
 
 
 // ── Real fixtures: three Lava Golem fights at XL 24/25/26 ────────────────────
-const fx = (name) => fs.readFileSync(path.join(here, 'fixtures', name), 'utf8');
+const fx = (name) => fs.readFileSync(path.join(here, '..', 'fixtures', name), 'utf8');
 
 console.log('multi-fight paste');
 const pairText = fx('two-fights-one-paste.txt');

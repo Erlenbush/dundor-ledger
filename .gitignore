@@ -1,2 +1,4 @@
-.parser.mjs
 node_modules/
+dist/
+*.tsbuildinfo
+.parser.mjs
