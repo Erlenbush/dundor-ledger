@@ -4,6 +4,7 @@ import { isOk, type LoadedFight } from './types.js';
 import { plural } from './format.js';
 import { SAMPLE } from './sample.js';
 import { CommandDeck } from './components/CommandDeck.js';
+import { DamageChart } from './components/DamageChart.js';
 import { FightBanner } from './components/FightBanner.js';
 import { FightList } from './components/FightList.js';
 import { HpChart } from './components/HpChart.js';
@@ -121,6 +122,7 @@ export function App() {
           <Telemetry item={shown} />
           <Insights insights={shown.insights} />
           <HpChart item={shown} />
+          <DamageChart item={shown} />
           <TurnLog item={shown} />
           <StatBlocks item={shown} />
         </>

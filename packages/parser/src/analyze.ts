@@ -1,6 +1,7 @@
 import { DAMAGE_FLOOR, MOVES_PER_TURN } from './constants.js';
 import type {
-  Analysis, CombatantStats, DamageInstance, Fight, HpPoint, Mitigation, StalledTurn,
+  Analysis, BandedRoll, CombatantStats, DamageInstance, Fight, HpPoint, Luck,
+  Mitigation, StalledTurn, TurnDamage,
 } from './types.js';
 
 const emptyStats = (): CombatantStats => ({
@@ -43,6 +44,17 @@ export function analyze(fight: Fight): Analysis {
   series[player]!.push({ turn: 0, hp: hp[player]! });
   series[monster]!.push({ turn: 0, hp: hp[monster]! });
 
+  const bandsOf = (who: string) =>
+    new Map((fight.entities[who]?.damages ?? []).map((d) => [d.type, d]));
+  const bands: Record<string, Map<string, { min: number; max: number }>> = {
+    [player]: bandsOf(player),
+    [monster]: bandsOf(monster),
+  };
+  const emptyLuck = (): Luck =>
+    ({ rolls: [], avgPct: null, hot: 0, cold: 0, attacks: 0, hits: 0, expectedHits: 0 });
+  const luck: Record<string, Luck> = { [player]: emptyLuck(), [monster]: emptyLuck() };
+  const turnDamage: TurnDamage[] = [];
+
   const turnsSeen: number[] = [];
   let firstAttackTurn: number | null = null;
   let closedAt: number | null = null;
@@ -53,6 +65,7 @@ export function analyze(fight: Fight): Analysis {
 
     const gainedThisTurn: Array<{ who: string; movesLeft: number | null }> = [];
     const spentThisTurn = new Set<string>();
+    const dealtThisTurn: Record<string, number> = { [player]: 0, [monster]: 0 };
 
     for (const b of t.beats) {
       events++;
@@ -74,6 +87,8 @@ export function analyze(fight: Fight): Analysis {
           s.attacks++;
           s.misses++;
           s.nearMisses.push({ turn: t.n, margin: b.threshold - b.roll, roll: b.roll, threshold: b.threshold });
+          const lm = luck[b.who];
+          if (lm) { lm.attacks++; lm.expectedHits += (100 - b.threshold) / 100; }
           firstAttackTurn ??= t.n;
           break;
         }
@@ -87,6 +102,9 @@ export function analyze(fight: Fight): Analysis {
           const margin = b.roll - b.threshold;
           if (margin < 2) s.nearHits.push({ turn: t.n, margin, roll: b.roll, threshold: b.threshold });
 
+          const lk = luck[b.who];
+          if (lk) { lk.attacks++; lk.hits++; lk.expectedHits += (100 - b.threshold) / 100; }
+
           for (const d of b.damages) {
             const dealt = d.dealt ?? 0;
             s.rawRolled += d.raw;
@@ -99,6 +117,18 @@ export function analyze(fight: Fight): Analysis {
               s.resistAbsorbedByFoe += resistLoss;
             }
             if (isFloored(d)) s.flooredHits++;
+            dealtThisTurn[b.who] = (dealtThisTurn[b.who] ?? 0) + dealt;
+
+            // Place the roll within its declared band. Skipped for synthesized
+            // entities and for degenerate bands where min equals max.
+            const band = bands[b.who]?.get(d.type);
+            if (lk && band && band.max > band.min) {
+              const pct = (100 * (d.raw - band.min)) / (band.max - band.min);
+              const roll: BandedRoll = { turn: t.n, type: d.type, raw: d.raw, min: band.min, max: band.max, pct };
+              lk.rolls.push(roll);
+              if (pct >= 90) lk.hot++;
+              if (pct <= 10) lk.cold++;
+            }
 
             s.byType[d.type] = (s.byType[d.type] ?? 0) + dealt;
             s.rawByType[d.type] = (s.rawByType[d.type] ?? 0) + d.raw;
@@ -117,6 +147,7 @@ export function analyze(fight: Fight): Analysis {
     if (t.n) {
       series[player]!.push({ turn: t.n, hp: hp[player]! });
       series[monster]!.push({ turn: t.n, hp: hp[monster]! });
+      turnDamage.push({ turn: t.n, dealt: dealtThisTurn });
     }
 
     // Gained moves but never spent any, which is the attack-speed tax made visible.
@@ -160,6 +191,11 @@ export function analyze(fight: Fight): Analysis {
     };
   };
 
+  for (const l of Object.values(luck)) {
+    l.avgPct = l.rolls.length ? l.rolls.reduce((n, r) => n + r.pct, 0) / l.rolls.length : null;
+    l.expectedHits = Number(l.expectedHits.toFixed(2));
+  }
+
   const rate = (who: string): number | null => {
     const s = stats[who]!;
     return s.attacks ? (s.hits / s.attacks) * 100 : null;
@@ -189,6 +225,8 @@ export function analyze(fight: Fight): Analysis {
       fight.startHp[player] != null && fight.maxHp[player]
         ? (fight.startHp[player]! / fight.maxHp[player]!) * 100
         : null,
+    luck,
+    turnDamage,
   };
 }
 

@@ -5,6 +5,11 @@ import type { Analysis, Fight, Insight } from './types.js';
 const pct = (n: number): string => `${Math.round(n * 10) / 10}%`;
 const one = (n: number): string => String(Math.round(n * 10) / 10);
 const cap = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1);
+const ordinal = (n: number): string => {
+  const v = n % 100;
+  if (v >= 11 && v <= 13) return `${n}th`;
+  return `${n}${['th', 'st', 'nd', 'rd'][n % 10] ?? 'th'}`;
+};
 const plural = (n: number, w: string): string => `${n} ${w}${n === 1 ? '' : 's'}`;
 
 const stat = (f: Fight, who: string, key: string): string | undefined =>
@@ -220,6 +225,49 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
         `${razor.landed ? 'landed' : 'missed'} by **${razor.margin.toFixed(3)}**. Dundor rolls these ` +
         `to five decimals, so outcomes this tight are settled far below anything the summary shows.`,
     });
+  }
+
+  // ── Dice ──────────────────────────────────────────────────────────────────
+  // Both inputs to luck are printed in the log: damage bands give each roll a
+  // position from 0 to 100, and evade thresholds give an exact expected hit
+  // count. Report the dice only when they were notably one-sided.
+  {
+    const facts: string[] = [];
+    let weight = 0;
+    for (const [who, l] of [[P, a.luck[P]!], [M, a.luck[M]!]] as const) {
+      const name = who === P ? 'You' : `The ${M}`;
+      const accGap = l.hits - l.expectedHits;
+      if (l.attacks >= 3 && Math.abs(accGap) >= 1.4) {
+        facts.push(
+          `${name} landed **${l.hits} of ${plural(l.attacks, 'swing')}** where a fair run ` +
+          `produces **${l.expectedHits}**, so the accuracy dice ran ` +
+          `${accGap > 0 ? 'hot' : 'cold'} by ${Math.abs(accGap).toFixed(1)} hits.`);
+        weight += Math.abs(accGap);
+      }
+      if (l.avgPct != null && l.rolls.length >= 4 && Math.abs(l.avgPct - 50) >= 18) {
+        facts.push(
+          `${name === 'You' ? 'Your' : `${name}'s`} damage rolls averaged the ` +
+          `**${ordinal(Math.round(l.avgPct))} percentile** of their bands.`);
+        weight += Math.abs(l.avgPct - 50) / 20;
+      }
+      const extreme = l.rolls.filter((r) => r.pct >= 98)[0];
+      if (extreme) {
+        facts.push(
+          `${name === 'You' ? 'Your' : `${name}'s`} turn-${extreme.turn} ${extreme.type} roll of ` +
+          `**${extreme.raw}** was the very top of its ${extreme.min}-${extreme.max} band.`);
+        weight += 1;
+      }
+    }
+    if (facts.length && weight >= 1.4) {
+      out.push({
+        id: 'dice',
+        severity: 'note',
+        tag: 'Dice',
+        headline: 'The dice had opinions about this fight.',
+        body: facts.join(' ') +
+          ' None of this is visible in the summary, and none of it is something you can fix.',
+      });
+    }
   }
 
   // ── Damage mix ────────────────────────────────────────────────────────────

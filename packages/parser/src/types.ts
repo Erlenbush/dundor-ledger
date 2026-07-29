@@ -126,6 +126,41 @@ export interface HpPoint {
   hp: number | null;
 }
 
+/** One damage roll located within its declared band. */
+export interface BandedRoll {
+  turn: number;
+  type: DamageType;
+  raw: number;
+  min: number;
+  max: number;
+  /** Where the roll fell in the band: 0 is the minimum, 100 the maximum. */
+  pct: number;
+}
+
+/**
+ * How the dice treated one combatant. Damage bands and evade thresholds are
+ * both printed in the log, so expected values are computable exactly.
+ */
+export interface Luck {
+  rolls: BandedRoll[];
+  /** Mean band position across all damage rolls. 50 is neutral. */
+  avgPct: number | null;
+  /** Rolls at or above the 90th band percentile. */
+  hot: number;
+  /** Rolls at or below the 10th band percentile. */
+  cold: number;
+  attacks: number;
+  hits: number;
+  /** Sum of per-attack hit probabilities, i.e. hits a fair run would produce. */
+  expectedHits: number;
+}
+
+export interface TurnDamage {
+  turn: number;
+  /** Damage each actor DEALT this turn, after mitigation. */
+  dealt: Record<string, number>;
+}
+
 export interface StalledTurn {
   turn: number;
   movesLeft: number | null;
@@ -154,6 +189,9 @@ export interface Analysis {
   finalMonsterHp: number | null;
   /** Player HP at the opening bell, as a share of their maximum. */
   startHpPct: number | null;
+  luck: Record<string, Luck>;
+  /** Post-mitigation damage per logged turn, for the damage chart. */
+  turnDamage: TurnDamage[];
   events: number;
   playerMitigation: Mitigation;
   monsterMitigation: Mitigation;

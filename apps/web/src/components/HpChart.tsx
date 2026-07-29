@@ -190,17 +190,22 @@ export function HpChart({ item }: { item: OkFight }) {
           <div className="tbl-scroll">
             <table className="data">
               <thead>
-                <tr><th>Turn</th><th>{P} HP</th><th>{M} HP</th><th>Phase</th></tr>
+                <tr><th>Turn</th><th>{P} HP</th><th>{M} HP</th><th>{P} dealt</th><th>{M} dealt</th><th>Phase</th></tr>
               </thead>
               <tbody>
-                {sP.map((d, i) => (
-                  <tr key={d.turn}>
-                    <td>{d.turn || '—'}</td>
-                    <td>{d.hp}</td>
-                    <td>{sM[i]?.hp ?? '—'}</td>
-                    <td>{d.turn === 0 ? 'start' : engage && d.turn < engage ? 'approach' : 'engagement'}</td>
-                  </tr>
-                ))}
+                {sP.map((d, i) => {
+                  const td = a.turnDamage.find((t) => t.turn === d.turn);
+                  return (
+                    <tr key={d.turn}>
+                      <td>{d.turn || '—'}</td>
+                      <td>{d.hp}</td>
+                      <td>{sM[i]?.hp ?? '—'}</td>
+                      <td>{td?.dealt[P] || 0}</td>
+                      <td>{td?.dealt[M] || 0}</td>
+                      <td>{d.turn === 0 ? 'start' : engage && d.turn < engage ? 'approach' : 'engagement'}</td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

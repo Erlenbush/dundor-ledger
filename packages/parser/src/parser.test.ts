@@ -342,6 +342,81 @@ describe('insights on a loss', () => {
   });
 });
 
+describe('roll luck', () => {
+  it('computes expected hits from the printed evade thresholds', () => {
+    const { analysis: a } = load('lava-golem-xl24.txt');
+    const mine = a.luck[a.player]!;
+    const theirs = a.luck[a.monster]!;
+    // Player: 5 swings against a 16.11% evade minus one sneak-modified turn.
+    expect(mine.attacks).toBe(5);
+    expect(mine.hits).toBe(2);
+    expect(mine.expectedHits).toBeCloseTo(3.66, 2);
+    // The golem landed all six where a fair run produces 4.27.
+    expect(theirs.attacks).toBe(6);
+    expect(theirs.hits).toBe(6);
+    expect(theirs.expectedHits).toBeCloseTo(4.27, 2);
+  });
+
+  it('places each damage roll within its declared band', () => {
+    const { analysis: a } = load('magma-golem-loss-xl35.txt');
+    const golem = a.luck[a.monster]!;
+    // The killing 340 came from a 102-340 fire band, i.e. the 100th percentile.
+    const top = golem.rolls.find((r) => r.raw === 340)!;
+    expect(top.type).toBe('fire');
+    expect(top.pct).toBe(100);
+    expect(golem.hot).toBe(1);
+    // The player rolled low overall: 93%, 8%, 12%, 10% averages under a third.
+    expect(a.luck[a.player]!.avgPct).toBeCloseTo(30.9, 1);
+  });
+
+  it('skips banding when the entity has no declared damages', () => {
+    const fight = parseFight([
+      'Logs ------------',
+      'TURN 1 ------------',
+      '[hero] hits [goblin] with a melee attack! Applying each damage. [evade roll: 90.0 > 10.0].',
+      '[hero] rolls 12 for :punch: physical!',
+      '[goblin] gets damaged by 12 damage! HP Left = 3/15.',
+      '[goblin] dies!',
+      '[hero] wins the fight because [goblin] has died!',
+    ].join('\n'));
+    const a = analyze(fight);
+    expect(a.luck['hero']!.rolls).toEqual([]);
+    expect(a.luck['hero']!.avgPct).toBeNull();
+    expect(a.luck['hero']!.expectedHits).toBeCloseTo(0.9, 5);
+  });
+});
+
+describe('damage per turn', () => {
+  it('sums post-mitigation damage for each logged turn', () => {
+    const { analysis: a } = load('magma-golem-loss-xl35.txt');
+    const by = Object.fromEntries(a.turnDamage.map((t) => [t.turn, t.dealt]));
+    // Turn 9: 253 physical + 1 floored poison from the player.
+    expect(by[9]![a.player]).toBe(254);
+    expect(by[9]![a.monster]).toBe(0);
+    // Turn 12: 1 floored physical + 51 fire, the killing turn.
+    expect(by[12]![a.monster]).toBe(52);
+    // Walking turns carry zeroes rather than being dropped, so charts stay aligned.
+    expect(by[3]).toEqual({ [a.player]: 0, [a.monster]: 0 });
+  });
+});
+
+describe('dice insight', () => {
+  it('reports the accuracy swing in the XL 24 fight', () => {
+    const { fight, analysis } = load('lava-golem-xl24.txt');
+    const dice = deriveInsights(fight, analysis).find((i) => i.id === 'dice')!;
+    expect(dice.body).toContain('2 of 5 swings');
+    expect(dice.body).toContain('3.66');
+    expect(dice.body).toContain('6 of 6 swings');
+  });
+
+  it('reports the top-of-band killing roll in the loss', () => {
+    const { fight, analysis } = load('magma-golem-loss-xl35.txt');
+    const dice = deriveInsights(fight, analysis).find((i) => i.id === 'dice')!;
+    expect(dice.body).toContain('**340**');
+    expect(dice.body).toContain('31st percentile');
+  });
+});
+
 describe('insights', () => {
   const { fight, analysis } = load('lava-golem-xl24.txt');
   const insights = deriveInsights(fight, analysis);
