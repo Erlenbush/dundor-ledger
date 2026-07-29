@@ -65,6 +65,12 @@ You do **not** have to alternate. Run a batch of fights, collect the logs at the
 file holding several fights is split automatically. With more than one loaded you get a
 fight switcher and session totals.
 
+## Analyzing fights in Python
+
+`npm run tojson <files>` converts logs to JSON with the full parse, analysis and
+insights per fight. `analysis/explore.py` is a pandas starter that flattens it
+into DataFrames. See `analysis/README.md`.
+
 ## Layout
 
 | Path | What it is |

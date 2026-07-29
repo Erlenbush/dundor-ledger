@@ -3,3 +3,4 @@ dist/
 .wrangler/
 *.tsbuildinfo
 .parser.mjs
+fights.json

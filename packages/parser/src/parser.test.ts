@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import fs from 'node:fs';
 import path from 'node:path';
-import { analyze, deriveInsights, parseFight, splitLogs, summarize } from './index.js';
+import { analyze, deriveInsights, exportFights, parseFight, splitLogs, summarize } from './index.js';
 import type { Analysis, Fight } from './types.js';
 
 const FIXTURES = path.resolve(import.meta.dirname, '../../../fixtures');
@@ -414,6 +414,31 @@ describe('dice insight', () => {
     const dice = deriveInsights(fight, analysis).find((i) => i.id === 'dice')!;
     expect(dice.body).toContain('**340**');
     expect(dice.body).toContain('31st percentile');
+  });
+});
+
+describe('exportFights', () => {
+  it('exports one entry per fight with fight, analysis and insights', () => {
+    const out = exportFights(read('two-fights-one-paste.txt'), 'pair.txt');
+    expect(out).toHaveLength(2);
+    const first = out[0]!;
+    if ('error' in first) throw new Error(first.error);
+    expect(first.source).toBe('pair.txt');
+    expect(first.fightIndex).toBe(0);
+    expect(first.analysis.totalTurns).toBe(19);
+    expect(first.insights.length).toBeGreaterThan(0);
+  });
+
+  it('round-trips through JSON without loss', () => {
+    const out = exportFights(read('magma-golem-loss-xl35.txt'), 'loss');
+    const back = JSON.parse(JSON.stringify(out));
+    expect(back).toEqual(out);
+  });
+
+  it('turns a bad section into an error entry instead of throwing', () => {
+    const out = exportFights('not a log at all', 'junk');
+    expect(out).toHaveLength(1);
+    expect(out[0]).toHaveProperty('error');
   });
 });
 
