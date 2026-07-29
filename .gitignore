@@ -4,3 +4,5 @@ dist/
 *.tsbuildinfo
 .parser.mjs
 fights.json
+__pycache__/
+.pytest_cache/

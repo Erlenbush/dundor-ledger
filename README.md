@@ -67,9 +67,9 @@ fight switcher and session totals.
 
 ## Analyzing fights in Python
 
-`npm run tojson <files>` converts logs to JSON with the full parse, analysis and
-insights per fight. `analysis/explore.py` is a pandas starter that flattens it
-into DataFrames. See `analysis/README.md`.
+`npm run -s tojson <files>` converts logs to JSON with the full parse, analysis and
+insights per fight (`-s` keeps npm's banner out of the redirect). `analysis/explore.py`
+is a pandas starter that flattens it into DataFrames. See `analysis/README.md`.
 
 ## Layout
 
@@ -77,7 +77,7 @@ into DataFrames. See `analysis/README.md`.
 |---|---|
 | `packages/parser` | `@dundor/parser`. Parse, analyse, derive insights. No DOM, no dependencies. |
 | `apps/web` | React + Vite front end. Presentation only; every number comes from the parser. |
-| `fixtures/` | Real logs: three Lava Golem fights at XL 24/25/26, plus two fights in one paste. |
+| `fixtures/` | Real logs: three Lava Golem wins at XL 24/25/26, a Magma Golem loss at XL 35, plus two fights in one paste. |
 | `prototype/` | The original single-file HTML prototype. Superseded, kept for reference. |
 
 The parser is deliberately DOM-free so the same module can later back a Discord
