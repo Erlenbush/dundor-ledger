@@ -58,7 +58,7 @@ export function App() {
     const ok = parsed.filter(isOk);
     const bad = parsed.length - ok.length;
 
-    // Nothing usable — report it, but leave whatever is on screen alone.
+    // Nothing usable. Report it, but leave whatever is on screen alone.
     if (!ok.length) {
       setStatus({
         error: true,
@@ -76,7 +76,7 @@ export function App() {
       error: false,
       text: ok.length === 1
         ? `Parsed ${ok[0]!.analysis.events} events across ${plural(ok[0]!.analysis.turnsSeen.length, 'turn')}.`
-        : `Parsed ${plural(ok.length, 'fight')} — ${events} events total.` +
+        : `Parsed ${plural(ok.length, 'fight')}, ${events} events total.` +
           (bad ? ` ${plural(bad, 'section')} skipped.` : ''),
     });
   }, []);
@@ -84,7 +84,7 @@ export function App() {
   const onFiles = useCallback(async (files: File[]) => {
     const usable = files.filter((f) => !f.type || /text|plain/.test(f.type) || /\.txt$/i.test(f.name));
     if (!usable.length) {
-      setStatus({ error: true, text: "Those aren't text files — Dundor attaches its logs as .txt." });
+      setStatus({ error: true, text: "Those aren't text files. Dundor attaches its logs as .txt." });
       return;
     }
     usable.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
@@ -99,9 +99,9 @@ export function App() {
         <div className="brand">Dundor · Battle Ledger</div>
         <h1>Everything the fight summary threw away.</h1>
         <p>
-          Drop the <code className="inline">.txt</code> logs Dundor attaches and this reconstructs each
-          fight: every roll, every point of mitigation, every banked move, every wasted turn. Load a
-          whole session at once and it totals them up.
+          Drop the <code className="inline">.txt</code> logs Dundor attaches and this reconstructs
+          each fight: damage rolls, mitigation, move economy and wasted turns. Load a whole session
+          at once and it totals them up.
         </p>
       </header>
 

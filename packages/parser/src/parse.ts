@@ -57,7 +57,7 @@ function parseStatBlock(name: string, lines: string[]): FightEntity {
 }
 
 /**
- * Parse ONE fight. If `text` holds several, only the first is read — use
+ * Parse ONE fight. If `text` holds several, only the first is read. Use
  * {@link splitLogs} to separate them first.
  *
  * @throws if no "Logs ---" section or no identifiable combatants are present.
@@ -91,7 +91,7 @@ export function parseFight(text: string): Fight {
     if (cursor) blocks.get(cursor)!.push(line);
   }
 
-  if (logStart < 0) throw new Error('No “Logs ---” section — this isn’t a Dundor fight log.');
+  if (logStart < 0) throw new Error('No “Logs ---” section. This is not a Dundor fight log.');
 
   const entities: Record<string, FightEntity> = {};
   for (const [name, blk] of blocks) entities[name] = parseStatBlock(name, blk);
@@ -162,7 +162,7 @@ export function parseFight(text: string): Fight {
       continue;
     }
 
-    // Must precede `roll` — both begin "[x] rolls N for".
+    // Must precede `roll`, since both begin "[x] rolls N for".
     if ((m = line.match(RE.ac))) {
       if (pending) {
         pending.acRoll = Number(m[2]);
@@ -237,7 +237,7 @@ export function parseFight(text: string): Fight {
   if (entities[second!]?.kind === 'player' && entities[first!]?.kind !== 'player') {
     [first, second] = [second, first];
   }
-  if (!first) throw new Error('Could not identify the combatants — is this a Dundor fight log?');
+  if (!first) throw new Error('Could not identify the combatants. Is this a Dundor fight log?');
   const player = first;
   const monster = second ?? seen.find((n) => n !== first) ?? 'Opponent';
 

@@ -11,7 +11,7 @@ interface Hover {
 }
 
 /**
- * Both combatants' hit points per turn. One shared y-axis — the two series are
+ * Both combatants' hit points per turn on one shared y-axis. The two series are
  * the same measure in the same unit, so a second scale would be a lie.
  *
  * Series colours are validated categorical slots (blue / orange); identity is
@@ -102,16 +102,16 @@ export function HpChart({ item }: { item: OkFight }) {
         <div className="legend">
           <span className="item">
             <span className="swatch" style={{ background: 'var(--s1)' }} />
-            {P}{Number.isFinite(fight.maxHp[P]) ? ` — max ${fight.maxHp[P]} HP` : ''}
+            {P}{Number.isFinite(fight.maxHp[P]) ? ` (max ${fight.maxHp[P]} HP)` : ''}
           </span>
           <span className="item">
             <span className="swatch" style={{ background: 'var(--s2)' }} />
-            {M}{Number.isFinite(fight.maxHp[M]) ? ` — max ${fight.maxHp[M]} HP` : ''}
+            {M}{Number.isFinite(fight.maxHp[M]) ? ` (max ${fight.maxHp[M]} HP)` : ''}
           </span>
           {engage ? (
             <span className="item">
               <span className="phase" style={{ background: 'var(--rule-soft)' }} />
-              Approach — no attacks possible
+              Approach (no attacks possible)
             </span>
           ) : null}
         </div>

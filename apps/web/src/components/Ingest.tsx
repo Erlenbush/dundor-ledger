@@ -48,8 +48,8 @@ export function Ingest({ onFiles, onPaste, status, initialText }: IngestProps) {
             />
           </label>
           <span className="hint">
-            or drag the <code className="inline">.txt</code> files Dundor attaches onto this page — as
-            many at once as you like.
+            or drag the <code className="inline">.txt</code> files Dundor attaches onto this page,
+            as many at once as you like.
           </span>
         </div>
 

@@ -31,7 +31,7 @@ export function StatBlocks({ item }: { item: OkFight }) {
 
 function Block({ e, other, side }: { e: FightEntity; other: FightEntity; side: 'p' | 'm' }) {
   const resists = RES_KEYS.filter(([k]) => Number(e.stats[k]) > 0);
-  // Negative pips are vulnerabilities — the most actionable line in a monster's
+  // Negative pips are vulnerabilities, the most actionable line in a monster's
   // block, so they get their own row rather than being filtered away.
   const vulns = RES_KEYS.filter(([k]) => Number(e.stats[k]) < 0);
 

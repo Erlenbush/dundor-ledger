@@ -16,7 +16,7 @@
     "pretest": "npm run check:sample",
     "test": "npm run test -w @dundor/parser",
     "dev": "npm run dev -w @dundor/web",
-    "typecheck": "npm run typecheck --workspaces --if-present",
+    "typecheck": "npm run build -w @dundor/parser && npm run typecheck --workspaces --if-present",
     "deploy": "npm run build && npm run publish:cf -w @dundor/web"
   }
 }

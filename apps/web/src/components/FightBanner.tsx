@@ -11,7 +11,7 @@ export function FightBanner({ item }: { item: OkFight }) {
   const mMax = fight.maxHp[a.monster];
   const won = fight.outcome.winner === a.player;
 
-  // Reconstruct the summary for THIS outcome — never assume a win.
+  // Reconstruct the summary for THIS outcome. Never assume a win.
   const summary = fight.outcome.decided
     ? won
       ? [

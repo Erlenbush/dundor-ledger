@@ -29,7 +29,7 @@ describe('splitLogs', () => {
 
 describe('multi-fight regression', () => {
   // Before splitLogs existed this produced turnsSeen 1,3..19,1,3..15 and
-  // reported 471 damage dealt where fight one dealt 211 — two fights merged
+  // reported 471 damage dealt where fight one dealt 211, with two fights merged
   // into a single silently-wrong record.
   const text = read('two-fights-one-paste.txt');
   const analysis = analyze(parseFight(text));
@@ -90,7 +90,7 @@ describe('stat block parsing', () => {
   const m = fight.entities['Lava Golem']!;
 
   it('reads keys written with a trailing space before the colon', () => {
-    // The log writes "Str : 57" — untrimmed, these were unreachable.
+    // The log writes "Str : 57". Untrimmed, these were unreachable.
     expect(p.stats['Str']).toBe('57');
     expect(p.stats['Int']).toBe('12');
   });
@@ -274,7 +274,7 @@ describe('a fight the player lost', () => {
   });
 
   it('reads starting HP from the entity header, not the maximum', () => {
-    // "Hp Left: 47" above "Hp: 389" — the player walked in at 12% health.
+    // "Hp Left: 47" above "Hp: 389". The player walked in at 12% health.
     expect(fight.startHp['food_']).toBe(47);
     expect(fight.maxHp['food_']).toBe(389);
     expect(a.startHpPct).toBeCloseTo(12.08, 1);
@@ -308,7 +308,7 @@ describe('a fight the player lost', () => {
   });
 
   it('never stalls at attack speed below 1.0', () => {
-    // 0.78 per swing against 1.0 regained — a surplus, not a deficit.
+    // 0.78 per swing against 1.0 regained, which is a surplus rather than a deficit.
     expect(a.stalled['food_']).toEqual([]);
   });
 });

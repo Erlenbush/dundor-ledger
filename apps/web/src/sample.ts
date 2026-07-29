@@ -1,4 +1,4 @@
-// GENERATED — do not edit. Run `npm run sample` to rebuild.
+// GENERATED FILE. Do not edit. Run `npm run sample` to rebuild.
 //
 // The XL 24 Lava Golem fight from fixtures/lava-golem-xl24.txt, with the player
 // name, god and Discord user ID scrubbed. This file is compiled into the public

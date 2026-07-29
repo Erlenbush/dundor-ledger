@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 
 /**
- * Buttons copy a command for you to paste — they never send anything. Discord
+ * Buttons copy a command for you to paste. They never send anything. Discord
  * prohibits automating a user account, and no bot API can invoke another bot's
  * slash commands, so a compliant tool cannot send on your behalf.
  */
@@ -28,7 +28,7 @@ export function CommandDeck() {
       await navigator.clipboard.writeText(cmd);
       setCopied(cmd);
     } catch {
-      // Clipboard blocked (insecure context or denied permission) — say so
+      // Clipboard blocked (insecure context or denied permission). Say so
       // rather than pretending it worked.
       setCopied(`__failed__${cmd}`);
     }
@@ -42,8 +42,8 @@ export function CommandDeck() {
       <div className="panel deck">
         <p className="note">
           <b>How this works.</b> Discord forbids automating a user account, and no bot API can invoke
-          another bot&rsquo;s commands. So these buttons copy the exact command to your clipboard —
-          you paste and send it yourself. Same keystrokes saved, no risk to your account. It sits
+          another bot&rsquo;s commands. So these buttons copy the exact command to your clipboard,
+          and you paste and send it yourself. Same keystrokes saved, no risk to your account. It sits
           behind one interface, so a real sender drops in if Dundor ever ships an API.
         </p>
         <div className="deckgrid">
@@ -53,7 +53,7 @@ export function CommandDeck() {
               <button key={c} type="button" className={`cmd${state ? ' copied' : ''}`} onClick={() => copy(c)}>
                 <span className="c">{c}</span>
                 <span className="d">
-                  {state === 'ok' ? 'Copied — paste in Discord'
+                  {state === 'ok' ? 'Copied, paste it in Discord'
                     : state === 'fail' ? 'Select and copy manually'
                     : d}
                 </span>

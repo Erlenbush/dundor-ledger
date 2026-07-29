@@ -19,7 +19,7 @@ export interface DamageInstance {
   resistPct?: number;
   afterResist?: number;
   acRoll?: number;
-  /** Reduction as the log STATES it — frequently larger than the damage available. */
+  /** Reduction as the log STATES it. Frequently larger than the damage available. */
   acCut?: number;
   afterAc?: number;
   dealt?: number;
@@ -69,8 +69,8 @@ export interface Fight {
   entities: Record<string, FightEntity>;
   maxHp: Record<string, number | null>;
   /**
-   * Hit points each combatant STARTED with. Not the same as `maxHp` — a player
-   * can walk into a fight already hurt, and seeding a chart from the maximum
+   * Hit points each combatant STARTED with. Not the same as `maxHp`, since a
+   * player can walk into a fight already hurt. Seeding a chart from the maximum
    * invents damage that never happened.
    */
   startHp: Record<string, number | null>;
@@ -98,7 +98,7 @@ export interface CombatantStats {
   rawRolled: number;
   /** Sum of damage that actually landed. */
   dealt: number;
-  /** Sum of AC reductions as STATED by the log. Inflated — see `Mitigation`. */
+  /** Sum of AC reductions as STATED by the log. Inflated; see `Mitigation`. */
   acAbsorbedByFoe: number;
   resistAbsorbedByFoe: number;
   /** Hits where AC would have wiped the damage but the 1-point floor let it through. */

@@ -83,7 +83,7 @@ export function analyze(fight: Fight): Analysis {
           s.attacks++;
           s.hits++;
           firstAttackTurn ??= t.n;
-          // Landed by a hair — the mirror of a near miss, and just as telling.
+          // Landed by a hair. The mirror of a near miss, and just as telling.
           const margin = b.roll - b.threshold;
           if (margin < 2) s.nearHits.push({ turn: t.n, margin, roll: b.roll, threshold: b.threshold });
 
@@ -119,7 +119,7 @@ export function analyze(fight: Fight): Analysis {
       series[monster]!.push({ turn: t.n, hp: hp[monster]! });
     }
 
-    // Gained moves but never spent any — the attack-speed tax made visible.
+    // Gained moves but never spent any, which is the attack-speed tax made visible.
     for (const g of gainedThisTurn) {
       if (spentThisTurn.has(g.who)) continue;
       const need = attackCost(fight, g.who);
@@ -140,7 +140,7 @@ export function analyze(fight: Fight): Analysis {
     : 0;
 
   /**
-   * Real absorption is raw minus dealt — NOT the sum of stated AC cuts. Dundor
+   * Real absorption is raw minus dealt, NOT the sum of stated AC cuts. Dundor
    * prints "reduces the damage by 140" against a 24-damage hit and then floors
    * the result at 1; summing the stated cuts reports absurd mitigation (743%
    * in one real log).

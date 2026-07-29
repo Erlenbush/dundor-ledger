@@ -27,7 +27,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
   const theirs = a.stats[M]!;
 
   // ── Element matchup ───────────────────────────────────────────────────────
-  // The highest-leverage finding available, and invisible in the fight summary.
+  // The most actionable finding, and one the fight summary never shows.
   const vulns = RES_KEYS.filter(([k]) => resistPips(fight, M, k) < 0);
   if (vulns.length) {
     const [vkey, vname] = vulns[0]!;
@@ -43,7 +43,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       const lost = mine.resistLossByType[sname] ?? 0;
       const gain = Math.round((sraw * vPct) / 100);
       quant = ` Your ${sname} rolled **${sraw}** raw here and lost **${lost}** to resistance. ` +
-        `The same rolls as ${vname} would have *gained* about **${gain}** instead — a swing of ` +
+        `The same rolls as ${vname} would have *gained* about **${gain}** instead, a swing of ` +
         `roughly **${lost + gain}** damage, for free.`;
     }
 
@@ -51,7 +51,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       id: 'matchup',
       severity: 'critical',
       tag: 'Matchup',
-      headline: `${M} is vulnerable to ${vname} — and you brought none.`,
+      headline: `${M} is vulnerable to ${vname}, and you brought none.`,
       body: `Its block lists **${vkey} ${stat(fight, M, vkey)}**, so ${vname} lands about ` +
         `**${Math.round(vPct)}% harder**` +
         (heavy.length ? `, while it shrugs off ${heavy.join(' and ')}` : '') + `.${quant} ` +
@@ -71,7 +71,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       headline: `You landed ${mine.hits} of ${plural(mine.attacks, 'swing')}.`,
       body: `Melee accuracy **${acc}** against evasion **${ev}** left you missing ` +
         `**${pct(100 - a.playerHitRate)}** of the time. Every miss is a full turn of nothing. ` +
-        `With damage this far ahead of the target's health pool, accuracy — not power — is what ` +
+        `With damage this far ahead of the target's health pool, accuracy rather than power is ` +
         `shortens these fights.`,
     });
   }
@@ -85,7 +85,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       tag: 'Tempo',
       headline: `${pct(approachShare)} of this fight was positioning.`,
       body: `You spotted it at **${fight.startDistance} tiles** and burned ` +
-        `**${plural(a.approachTurns, 'turn')}** getting into range — contact on turn ` +
+        `**${plural(a.approachTurns, 'turn')}** getting into range. Contact came on turn ` +
         `**${a.closedAt}**, first swing on turn **${a.firstAttackTurn}**. Nothing was at stake in ` +
         `that stretch; it is pure clock. Spawn distance, not the monster, set the length of this fight.`,
     });
@@ -103,12 +103,12 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       severity: a.startHpPct < 25 ? 'critical' : 'warning',
       tag: 'Entry HP',
       headline: `You started this fight at ${pct(a.startHpPct)} health.`,
-      body: `**${start}/${max} HP** at the opening bell — Dundor does not top you up between ` +
+      body: `**${start}/${max} HP** at the opening bell. Dundor does not top you up between ` +
         `fights. You then took **${a.playerMitigation.taken}** damage over ${plural(a.totalTurns, 'turn')}` +
         (playerDied && survivable
           ? `, which killed you. At full health the same fight ends with you on ` +
-            `**${(max ?? 0) - a.playerMitigation.taken}/${max}**. Nothing about the matchup beat you — ` +
-            `the entry HP did. Resting first was the whole fight.`
+            `**${(max ?? 0) - a.playerMitigation.taken}/${max}**. Nothing about the matchup beat ` +
+            `you. The entry HP did, and resting first was the whole fight.`
           : `. Worth resting before the next one.`),
     });
   }
@@ -134,11 +134,11 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
         tag: 'Killing blow',
         headline: `A ${fatal.raw}-point ${fatal.type} roll finished you.`,
         body: `It rolled **${fatal.raw}**` +
-          (band ? ` from a ${band.min}–${band.max} band — near the top of its range` : '') +
+          (band ? ` from a ${band.min}–${band.max} band, near the top of its range` : '') +
           `. Your resistance took it to **${fatal.resist ?? fatal.raw}**, armour absorbed ` +
           `**${fatal.ac ?? 0}**, and **${fatal.dealt}** still landed. Every earlier hit had bottomed ` +
           `out at the damage floor; this one did not, because ${fatal.type} is where this monster ` +
-          `actually threatens you — not its ${fight.entities[M]?.damages[0]?.type ?? 'melee'}.`,
+          `actually threatens you, not its ${fight.entities[M]?.damages[0]?.type ?? 'melee'}.`,
       });
     }
   }
@@ -156,12 +156,12 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       headline: 'Your armour made this a non-fight.',
       body: `It connected on ${a.monsterHitRate != null ? pct(a.monsterHitRate) : 'most'} of its ` +
         `swings and still could not hurt you. **${mit.incomingRaw} damage** was rolled at you across ` +
-        `${plural(theirs.attacks, 'attack')}; you took **${mit.taken}** — **${pct(mit.pct)}** absorbed. ` +
+        `${plural(theirs.attacks, 'attack')}; you took **${mit.taken}**, so **${pct(mit.pct)}** was absorbed. ` +
         `AC **${stat(fight, P, 'Ac')}** against ${band ? `${band.min}–${band.max}` : 'its small'} hits ` +
         `means every blow bottoms out at the **1 damage floor**` +
         (mit.flooredHits ? `, which is exactly what happened all ${mit.flooredHits} times` : '') +
         `. Note the log claims **${mit.acStated}** reduced, but only **${mit.absorbed}** was ever ` +
-        `there to reduce — a huge AC roll against a small hit still only absorbs that hit.`,
+        `there to reduce. A huge AC roll against a small hit still only absorbs that hit.`,
     });
   }
 
@@ -180,7 +180,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       tag: 'Attack speed',
       headline: `Attack speed ${speed} cost you ${plural(stalls.length, 'turn')}.`,
       body: `You regain 1.0 moves per turn but each swing costs **${speed}**, so you bank a ` +
-        `fraction and periodically stall with nothing to spend it on${detail ? ` — ${detail}` : ''}. ` +
+        `fraction and periodically stall with nothing to spend it on${detail ? `: ${detail}` : ''}. ` +
         `A weapon at 1.0 speed converts those dead turns into real attacks.`,
     });
   }
@@ -194,7 +194,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       severity: share >= 30 ? 'warning' : 'note',
       tag: 'Overkill',
       headline: `${a.overkill} damage spilled past the kill.`,
-      body: `Your final blow left it at **${a.finalMonsterHp}/${fight.maxHp[M]}** — ` +
+      body: `Your final blow left it at **${a.finalMonsterHp}/${fight.maxHp[M]}**, so ` +
         `**${pct(share)}** of your output did nothing. ` +
         (band ? `Your minimum ${band.type} roll alone is **${band.min}** against a monster with ` +
           `${fight.maxHp[M]} HP. ` : '') +
@@ -216,7 +216,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       tag: 'Coin flip',
       headline: `Turn ${razor.turn} came down to ${razor.margin.toFixed(3)}.`,
       body: `${razor.who === P ? 'Your' : `The ${M}'s`} evade roll was ` +
-        `**${razor.roll.toFixed(5)}** against a threshold of **${razor.threshold.toFixed(5)}** — it ` +
+        `**${razor.roll.toFixed(5)}** against a threshold of **${razor.threshold.toFixed(5)}**, so it ` +
         `${razor.landed ? 'landed' : 'missed'} by **${razor.margin.toFixed(3)}**. Dundor rolls these ` +
         `to five decimals, so outcomes this tight are settled far below anything the summary shows.`,
     });

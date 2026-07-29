@@ -23,8 +23,8 @@ export function TurnLog({ item }: { item: OkFight }) {
 
   const live = fight.turns.filter((t) => t.n);
 
-  // Runs of pure walking are noise — six rows of "closes to N tiles" bury the
-  // turns that mattered. Fold each run into one row.
+  // Runs of pure walking are noise. Six rows of "closes to N tiles" bury the
+  // turns that mattered, so fold each run into one row.
   const groups: Group[] = [];
   let distance = fight.startDistance;
   for (const t of live) {
@@ -56,7 +56,7 @@ export function TurnLog({ item }: { item: OkFight }) {
                     {movers.map((w, i) => (
                       <Fragment key={w}>{i ? ' and ' : ''}<Actor who={w} /></Fragment>
                     ))}{' '}
-                    trade steps for <b>{g.turns.length} turns</b> — closing from {g.entering} tiles to{' '}
+                    trade steps for <b>{g.turns.length} turns</b>, closing from {g.entering} tiles to{' '}
                     {to && to.t === 'move' ? to.distance : 0}. No attacks possible.
                   </div>
                 </div>
@@ -80,7 +80,7 @@ function TurnRow({ turn, item }: { turn: Turn; item: OkFight }) {
   const lead = turn.beats.find((b) => 'who' in b) as Extract<Beat, { who: string }> | undefined;
 
   // A turn landing physical AND fire logs two "gets damaged" lines. Show one HP
-  // bar per victim — the state at the end of the turn, not one per instance.
+  // bar per victim: the state at the end of the turn, not one per instance.
   const lastDamaged = new Map<string, number>();
   turn.beats.forEach((b, i) => { if (b.t === 'damaged') lastDamaged.set(b.who, i); });
 
@@ -90,7 +90,7 @@ function TurnRow({ turn, item }: { turn: Turn; item: OkFight }) {
       case 'sneak':
         rows.push(
           <div className="beat head" key={bi}>
-            <Actor who={b.who} /> sneaks {b.spaces} closer — <b>alerts it</b>. {b.distance} tiles left.
+            <Actor who={b.who} /> sneaks {b.spaces} closer and <b>alerts it</b>. {b.distance} tiles left.
           </div>,
         );
         break;
@@ -172,7 +172,7 @@ function TurnRow({ turn, item }: { turn: Turn; item: OkFight }) {
     if (gained && gained.t === 'gains') {
       rows.push(
         <div className="beat quiet" key="stall">
-          <Actor who={gained.who} /> banks moves — holds {one(gained.movesLeft ?? 0)}
+          <Actor who={gained.who} /> banks moves, holding {one(gained.movesLeft ?? 0)}
           {stall?.need != null ? `, an attack costs ${one(stall.need)}.` : '.'}
           {stall?.short != null && stall.short > 0 ? (
             <> <b style={{ color: 'var(--warn)' }}>Short {one(stall.short)}. Turn wasted.</b></>
@@ -195,8 +195,8 @@ function TurnRow({ turn, item }: { turn: Turn; item: OkFight }) {
 
 /**
  * The mitigation chain for one damage instance. Where AC swallowed the hit
- * entirely we print what actually happened rather than the log's stated cut —
- * an AC roll of 140 against a 24-damage hit absorbs 24, not 140.
+ * entirely we print what actually happened rather than the log's stated cut.
+ * An AC roll of 140 against a 24-damage hit absorbs 24, not 140.
  */
 function DamageRow({ d }: { d: DamageInstance }) {
   const preAc = d.afterResist ?? d.raw;

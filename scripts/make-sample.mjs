@@ -2,7 +2,7 @@
 // field scrubbed.
 //
 // The sample is compiled into a publicly served bundle, so this runs as a build
-// step rather than a manual edit — regenerating the sample can never quietly
+// step rather than a manual edit, so regenerating the sample cannot quietly
 // reintroduce personal data. It fails loudly if anything identifying survives.
 //
 //   npm run sample
@@ -17,7 +17,7 @@ const TARGET = path.join(root, 'apps', 'web', 'src', 'sample.ts');
 /**
  * Every field in a Dundor log that ties back to a real person.
  *
- * `Name` is the player's Discord username and `User Id` their snowflake — both
+ * `Name` is the player's Discord username and `User Id` their snowflake. Both
  * resolve to the same live account. `God` is game content, but combined with a
  * full stat block it still fingerprints one character.
  */
@@ -31,7 +31,7 @@ let text = fs.readFileSync(SOURCE, 'utf8').replace(/\r/g, '').trimEnd();
 
 for (const { what, find, put, expect } of REDACTIONS) {
   const hits = text.match(find)?.length ?? 0;
-  if (hits === 0) throw new Error(`${what}: nothing matched — has the log format changed?`);
+  if (hits === 0) throw new Error(`${what}: nothing matched. Has the log format changed?`);
   if (expect !== null && hits !== expect) {
     throw new Error(`${what}: expected ${expect} occurrence(s), found ${hits}`);
   }
@@ -43,7 +43,7 @@ for (const { what, find, put, expect } of REDACTIONS) {
 // future log format might introduce under a different key.
 const FORBIDDEN = [/123369068005818368/, /\bfood_/, /\bStcafetra\b/];
 for (const re of FORBIDDEN) {
-  if (re.test(text)) throw new Error(`redaction failed — ${re} still present`);
+  if (re.test(text)) throw new Error(`redaction failed: ${re} still present`);
 }
 const strays = [...new Set(text.match(/\b\d{17,19}\b/g) ?? [])].filter((s) => !/^0+$/.test(s));
 if (strays.length) throw new Error(`unredacted long identifier(s): ${strays.join(', ')}`);
@@ -55,7 +55,7 @@ if (text.includes('`') || text.includes('${')) {
 
 const CHECK = process.argv.includes('--check');
 
-const banner = `// GENERATED — do not edit. Run \`npm run sample\` to rebuild.
+const banner = `// GENERATED FILE. Do not edit. Run \`npm run sample\` to rebuild.
 //
 // The XL 24 Lava Golem fight from fixtures/lava-golem-xl24.txt, with the player
 // name, god and Discord user ID scrubbed. This file is compiled into the public
@@ -78,7 +78,7 @@ if (CHECK) {
     );
     process.exit(1);
   }
-  console.log(`\n${path.relative(root, TARGET)} is clean — nothing identifying ships.`);
+  console.log(`\n${path.relative(root, TARGET)} is clean. Nothing identifying ships.`);
 } else {
   fs.writeFileSync(TARGET, expected);
   console.log(`\nwrote ${path.relative(root, TARGET)} (${text.length} chars)`);

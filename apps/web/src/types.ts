@@ -8,7 +8,7 @@ export interface OkFight {
   insights: Insight[];
 }
 
-/** A log that did not parse — kept in the list rather than dropped silently. */
+/** A log that did not parse. Kept in the list rather than dropped silently. */
 export interface FailedFight {
   label: string;
   error: string;

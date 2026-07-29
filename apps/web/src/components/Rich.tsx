@@ -2,7 +2,7 @@ import { Fragment, type ReactElement } from 'react';
 
 /**
  * Render the tiny markup the parser emits in insight bodies: **bold** and
- * *italic*. Deliberately not HTML — the parser stays renderer-agnostic and
+ * *italic*. Deliberately not HTML, so the parser stays renderer-agnostic and
  * nothing it produces can inject markup.
  */
 export function Rich({ text }: { text: string }): ReactElement {
