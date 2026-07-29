@@ -33,9 +33,11 @@ export function analyze(fight: Fight): Analysis {
   const stalled: Record<string, StalledTurn[]> = { [player]: [], [monster]: [] };
   const series: Record<string, HpPoint[]> = { [player]: [], [monster]: [] };
 
+  // Seed from what each side walked in with. Seeding from the maximum draws a
+  // phantom cliff on the first turn a wounded combatant reports its real HP.
   const hp: Record<string, number | null> = {
-    [player]: fight.maxHp[player] ?? null,
-    [monster]: fight.maxHp[monster] ?? null,
+    [player]: fight.startHp[player] ?? fight.maxHp[player] ?? null,
+    [monster]: fight.startHp[monster] ?? fight.maxHp[monster] ?? null,
   };
 
   series[player]!.push({ turn: 0, hp: hp[player]! });
@@ -183,6 +185,10 @@ export function analyze(fight: Fight): Analysis {
     monsterMitigation: mitigationFor(monster),
     playerHitRate: rate(player),
     monsterHitRate: rate(monster),
+    startHpPct:
+      fight.startHp[player] != null && fight.maxHp[player]
+        ? (fight.startHp[player]! / fight.maxHp[player]!) * 100
+        : null,
   };
 }
 

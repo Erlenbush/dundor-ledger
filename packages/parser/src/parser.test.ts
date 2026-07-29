@@ -261,6 +261,87 @@ describe('degraded input', () => {
   });
 });
 
+describe('a fight the player lost', () => {
+  // The first loss log, and it exposed two bugs: HP charted from the maximum
+  // rather than what the player walked in with, and an unhandled log line.
+  const { fight, analysis: a } = load('magma-golem-loss-xl35.txt');
+
+  it('records the loss without assuming a win', () => {
+    expect(fight.outcome).toEqual({ winner: 'Magma Golem', loser: 'food_', decided: true });
+    expect(a.finalPlayerHp).toBe(-7);
+    expect(a.overkillOn).toBe('food_');
+    expect(a.overkill).toBe(7);
+  });
+
+  it('reads starting HP from the entity header, not the maximum', () => {
+    // "Hp Left: 47" above "Hp: 389" — the player walked in at 12% health.
+    expect(fight.startHp['food_']).toBe(47);
+    expect(fight.maxHp['food_']).toBe(389);
+    expect(a.startHpPct).toBeCloseTo(12.08, 1);
+  });
+
+  it('does not chart a cliff the player never took', () => {
+    // Seeding from maxHp drew 389 -> 47 between turns 1 and 3: 342 phantom damage.
+    const series = a.series['food_']!;
+    expect(series[0]).toEqual({ turn: 0, hp: 47 });
+    const drops = series.slice(1).map((p, i) => (series[i]!.hp ?? 0) - (p.hp ?? 0));
+    // Largest real drop is turn 12: 1 physical + 51 fire = 52, taking 44 to -7.
+    expect(Math.max(...drops)).toBe(52);
+  });
+
+  it('parses the on-hit effect proc', () => {
+    const effects = fight.turns.flatMap((t) =>
+      t.beats.filter((b) => b.t === 'effect').map((b) => ({ turn: t.n, ...b })));
+    expect(effects).toHaveLength(1);
+    expect(effects[0]).toMatchObject({ turn: 11, who: 'food_', effect: 'poisoned' });
+  });
+
+  it('leaves no log line unrecognised', () => {
+    const unknown = fight.turns.flatMap((t) => t.beats.filter((b) => b.t === 'raw'));
+    expect(unknown).toEqual([]);
+  });
+
+  it('still accounts damage correctly', () => {
+    expect(a.playerMitigation.incomingRaw).toBe(570);
+    expect(a.playerMitigation.taken).toBe(54);      // 47 - 54 = -7
+    expect(a.stats['food_']!.dealt).toBe(346);
+  });
+
+  it('never stalls at attack speed below 1.0', () => {
+    // 0.78 per swing against 1.0 regained — a surplus, not a deficit.
+    expect(a.stalled['food_']).toEqual([]);
+  });
+});
+
+describe('insights on a loss', () => {
+  const { fight, analysis: a } = load('magma-golem-loss-xl35.txt');
+  const insights = deriveInsights(fight, a);
+  const ids = insights.map((i) => i.id);
+  const byId = Object.fromEntries(insights.map((i) => [i.id, i]));
+
+  it('does not claim the armour won a fight the player died in', () => {
+    // Mitigation was 90.5%, which previously triggered "made this a non-fight".
+    expect(a.playerMitigation.pct).toBeGreaterThan(75);
+    expect(ids).not.toContain('defense');
+  });
+
+  it('leads on entry HP, which is what actually killed them', () => {
+    expect(ids).toContain('low-hp-start');
+    expect(byId['low-hp-start']!.severity).toBe('critical');
+    expect(byId['low-hp-start']!.body).toContain('335/389');   // survivable at full health
+  });
+
+  it('identifies the killing blow and its element', () => {
+    expect(byId['killing-blow']!.headline).toBe('A 340-point fire roll finished you.');
+    expect(byId['killing-blow']!.body).toContain('102–340');
+  });
+
+  it('reads the five-pip cold vulnerability', () => {
+    expect(byId['matchup']!.headline).toContain('vulnerable to cold');
+    expect(byId['matchup']!.body).toContain('83% harder');
+  });
+});
+
 describe('insights', () => {
   const { fight, analysis } = load('lava-golem-xl24.txt');
   const insights = deriveInsights(fight, analysis);

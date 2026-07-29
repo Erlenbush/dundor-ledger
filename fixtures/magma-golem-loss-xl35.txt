@@ -1,0 +1,163 @@
+The fight happens between food_ and Magma Golem!
+Stats for food_ ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0
+  Hp Left: 47
+  Mana Left: 13
+  - stats:
+    PlayerData:
+      Hp: 389
+      Mana: 13
+      Rfire: 1
+      Rcold: 1
+      Rpois: 0
+      Relec: 2
+      Revil: 1
+      Racid: 3
+      Spirit: 1
+      See Invis: 2
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 235
+      Ev: 10
+      Sh: 28
+      Damages: [DamageInfo(type=:punch: physical, min_amount=85, max_amount=284), DamageInfo(type=:green_circle: poison, min_amount=21, max_amount=71)]
+      Attack Speed: 0.78
+      Melee Accuracy: 4.0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 1.5
+      Effects Can Be Silenced: False
+      On Hit Effects: [OnHitEffect(effect_id=0, chance=20.0, power=5)]
+      Name: food_
+      Effect Power Level: 0
+      Spells: []
+      User Id: 123369068005818368
+      Resurrection: 2
+      God: Stcafetra
+      Str : 62
+      Dex: 10
+      Int : 12
+      Xl: 35
+  Melee Evade Chance: 13.587289700909427
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: food_
+  Is Silenced: False
+Stats for Magma Golem ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0
+  Hp Left: 600
+  Mana Left: 0
+  - stats:
+    MonsterData:
+      Hp: 600
+      Mana: 0
+      Rfire: 6
+      Rcold: -5
+      Rpois: 2
+      Relec: 0
+      Revil: 2
+      Racid: 2
+      Spirit: 0
+      See Invis: False
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 21
+      Ev: 10
+      Sh: 20
+      Damages: [DamageInfo(type=:punch: physical, min_amount=11, max_amount=38), DamageInfo(type=:fire: fire, min_amount=102, max_amount=340)]
+      Attack Speed: 1.0
+      Melee Accuracy: 5
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 0.0
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: Magma Golem
+      Effect Power Level: 0
+  Melee Evade Chance: 11.920292202211755
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: Magma Golem
+  Is Silenced: False
+  Affected By Holy Damage: False
+Logs ------------------------------------------------------------------------------------------
+The distance between you is 8 tiles.
+[food_] starts first because [Magma Golem] hasn't noticed them yet.
+TURN 1 ------------------------------------------------------------------------------------------
+[food_] sneaks 1 space closer but alerts [Magma Golem]! Distance left = 7. Turn ended for [food_].
+[Magma Golem] gains 1.0 moves. Moves left = 1.0. HP left: 600/600. Mana left: 0/0.
+[Magma Golem] moves 1 space closer to [food_]. Distance left = 6.
+[Magma Golem] uses 1.0 moves! Moves left = 0.0.
+TURN 3 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 47/389. Mana left: 13/13.
+[food_] moves 1 space closer to [Magma Golem]. Distance left = 5.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 4 ------------------------------------------------------------------------------------------
+[Magma Golem] gains 1.0 moves. Moves left = 1.0. HP left: 600/600. Mana left: 0/0.
+[Magma Golem] moves 1 space closer to [food_]. Distance left = 4.
+[Magma Golem] uses 1.0 moves! Moves left = 0.0.
+TURN 5 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 47/389. Mana left: 13/13.
+[food_] moves 1 space closer to [Magma Golem]. Distance left = 3.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 6 ------------------------------------------------------------------------------------------
+[Magma Golem] gains 1.0 moves. Moves left = 1.0. HP left: 600/600. Mana left: 0/0.
+[Magma Golem] moves 1 space closer to [food_]. Distance left = 2.
+[Magma Golem] uses 1.0 moves! Moves left = 0.0.
+TURN 7 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 47/389. Mana left: 13/13.
+[food_] moves 1 space closer to [Magma Golem]. Distance left = 1.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 8 ------------------------------------------------------------------------------------------
+[Magma Golem] gains 1.0 moves. Moves left = 1.0. HP left: 600/600. Mana left: 0/0.
+[Magma Golem] moves 1 space closer to [food_]. Distance left = 0.
+[Magma Golem] uses 1.0 moves! Moves left = 0.0.
+TURN 9 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 47/389. Mana left: 13/13.
+[food_] hits [Magma Golem] with a melee attack! Applying each damage. [evade roll: 36.86722 > 11.92029].
+[food_] rolls 271 for :punch: physical!
+[Magma Golem] rolls 18 for AC and reduces the damage by 18! Damage Left = 253
+[Magma Golem] gets damaged by 253 damage! HP Left = 347/600.
+[food_] rolls 25 for :green_circle: poison!
+[Magma Golem] reduces the damage by 33.33% because of their resistance to this element! Damage Left = 17
+[Magma Golem] rolls 16 for AC and reduces the damage by 16! Damage Left = 1
+[Magma Golem] gets damaged by 1 damage! HP Left = 346/600.
+[food_] uses 0.78 moves! Moves left = 0.21999999999999997.
+TURN 10 ------------------------------------------------------------------------------------------
+[Magma Golem] gains 1.0 moves. Moves left = 1.0. HP left: 346/600. Mana left: 0/0.
+[Magma Golem] hits [food_] with a melee attack! Applying each damage. [evade roll: 99.30546 > 13.58729].
+[Magma Golem] rolls 13 for :punch: physical!
+[food_] rolls 137 for AC and reduces the damage by 137! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 46/389.
+[Magma Golem] rolls 187 for :fire: fire!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 156
+[food_] rolls 230 for AC and reduces the damage by 230! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 45/389.
+[Magma Golem] uses 1.00 moves! Moves left = 0.0.
+TURN 11 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.22. HP left: 45/389. Mana left: 13/13.
+[food_] hits [Magma Golem] with a melee attack! Applying each damage. [evade roll: 14.73041 > 11.92029].
+[food_] rolls 109 for :punch: physical!
+[Magma Golem] rolls 18 for AC and reduces the damage by 18! Damage Left = 91
+[Magma Golem] gets damaged by 91 damage! HP Left = 255/600.
+[food_] rolls 26 for :green_circle: poison!
+[Magma Golem] reduces the damage by 33.33% because of their resistance to this element! Damage Left = 18
+[Magma Golem] rolls 19 for AC and reduces the damage by 19! Damage Left = 1
+[Magma Golem] gets damaged by 1 damage! HP Left = 254/600.
+[food_] applied the on hit effect [poisoned]!
+[food_] uses 0.78 moves! Moves left = 0.43999999999999995.
+TURN 12 ------------------------------------------------------------------------------------------
+[Magma Golem] gains 1.0 moves. Moves left = 1.0. HP left: 254/600. Mana left: 0/0.
+[Magma Golem] hits [food_] with a melee attack! Applying each damage. [evade roll: 37.83695 > 13.58729].
+[Magma Golem] rolls 30 for :punch: physical!
+[food_] rolls 145 for AC and reduces the damage by 145! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 44/389.
+[Magma Golem] rolls 340 for :fire: fire!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 284
+[food_] rolls 233 for AC and reduces the damage by 233! Damage Left = 51
+[food_] gets damaged by 51 damage! HP Left = -7/389.
+[Magma Golem] uses 1.00 moves! Moves left = 0.0.
+[food_] dies!
+[Magma Golem] wins the fight because [food_] has died!

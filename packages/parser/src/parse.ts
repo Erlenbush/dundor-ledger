@@ -197,6 +197,10 @@ export function parseFight(text: string): Fight {
       pending = null;
       continue;
     }
+    if ((m = line.match(RE.effect))) {
+      add({ t: 'effect', who: m[1]!, effect: m[2]! });
+      continue;
+    }
     if ((m = line.match(RE.dies))) {
       add({ t: 'dies', who: m[1]! });
       outcome.loser = m[1]!;
@@ -244,10 +248,14 @@ export function parseFight(text: string): Fight {
     }
   }
 
-  const declared = (n: string): number | null => {
-    const v = Number(entities[n]!.stats['Hp']);
+  const statNum = (n: string, key: string): number | null => {
+    const v = Number(entities[n]!.stats[key]);
     return Number.isFinite(v) ? v : null;
   };
+  // `Hp` (inside PlayerData/MonsterData) is the maximum; `Hp Left` on the
+  // FightEntity above it is what the combatant actually walked in with.
+  const declared = (n: string) => statNum(n, 'Hp');
+  const opening = (n: string) => statNum(n, 'Hp Left') ?? declared(n) ?? observedMax[n] ?? null;
 
   return {
     playerName: player,
@@ -256,6 +264,10 @@ export function parseFight(text: string): Fight {
     maxHp: {
       [player]: declared(player) ?? observedMax[player] ?? null,
       [monster]: declared(monster) ?? observedMax[monster] ?? null,
+    },
+    startHp: {
+      [player]: opening(player),
+      [monster]: opening(monster),
     },
     startDistance,
     firstMover,

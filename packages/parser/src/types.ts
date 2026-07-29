@@ -37,6 +37,7 @@ export type Beat =
   | { t: 'miss'; who: string; roll: number; threshold: number }
   | { t: 'hit'; who: string; target: string; roll: number; threshold: number; damages: DamageInstance[] }
   | { t: 'damaged'; who: string; amount: number; hp: number; hpMax: number }
+  | { t: 'effect'; who: string; effect: string }
   | { t: 'dies'; who: string }
   | { t: 'wins'; who: string; because: string }
   | { t: 'raw'; text: string };
@@ -67,6 +68,12 @@ export interface Fight {
   monsterName: string;
   entities: Record<string, FightEntity>;
   maxHp: Record<string, number | null>;
+  /**
+   * Hit points each combatant STARTED with. Not the same as `maxHp` — a player
+   * can walk into a fight already hurt, and seeding a chart from the maximum
+   * invents damage that never happened.
+   */
+  startHp: Record<string, number | null>;
   startDistance: number | null;
   firstMover: string | null;
   /** The player opened before being noticed. */
@@ -145,6 +152,8 @@ export interface Analysis {
   overkillOn: string | null;
   finalPlayerHp: number | null;
   finalMonsterHp: number | null;
+  /** Player HP at the opening bell, as a share of their maximum. */
+  startHpPct: number | null;
   events: number;
   playerMitigation: Mitigation;
   monsterMitigation: Mitigation;

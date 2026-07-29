@@ -22,6 +22,7 @@ export const RE = {
   resist: /^\[(.+?)\] reduces the damage by ([\d.]+)% because of their resistance to this element! Damage Left = (-?\d+)$/,
   roll: /^\[(.+?)\] rolls (\d+) for :([\w+-]+): (.+?)!$/,
   damaged: /^\[(.+?)\] gets damaged by (\d+) damage! HP Left = (-?\d+)\/(\d+)\.$/,
+  effect: /^\[(.+?)\] applied the on hit effect \[(.+?)\]!$/,
   dies: /^\[(.+?)\] dies!$/,
   wins: /^\[(.+?)\] wins the fight because \[(.+?)\] has died!$/,
   damageInfo: /DamageInfo\(type=:([\w+-]+):\s*([^,]+),\s*min_amount=(-?\d+),\s*max_amount=(-?\d+)\)/g,

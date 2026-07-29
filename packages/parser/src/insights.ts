@@ -91,10 +91,64 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
     });
   }
 
+  // ── Walked in wounded ─────────────────────────────────────────────────────
+  // Dundor does not heal you between fights, so this is often the whole story.
+  const playerDied = fight.outcome.loser === P;
+  if (a.startHpPct != null && a.startHpPct < 60) {
+    const start = fight.startHp[P];
+    const max = fight.maxHp[P];
+    const survivable = a.playerMitigation.taken < (max ?? 0);
+    out.push({
+      id: 'low-hp-start',
+      severity: a.startHpPct < 25 ? 'critical' : 'warning',
+      tag: 'Entry HP',
+      headline: `You started this fight at ${pct(a.startHpPct)} health.`,
+      body: `**${start}/${max} HP** at the opening bell — Dundor does not top you up between ` +
+        `fights. You then took **${a.playerMitigation.taken}** damage over ${plural(a.totalTurns, 'turn')}` +
+        (playerDied && survivable
+          ? `, which killed you. At full health the same fight ends with you on ` +
+            `**${(max ?? 0) - a.playerMitigation.taken}/${max}**. Nothing about the matchup beat you — ` +
+            `the entry HP did. Resting first was the whole fight.`
+          : `. Worth resting before the next one.`),
+    });
+  }
+
+  // ── The blow that ended it ────────────────────────────────────────────────
+  if (playerDied) {
+    let fatal: { type: string; raw: number; dealt: number; resist?: number; ac?: number } | null = null;
+    for (const t of fight.turns) {
+      for (const b of t.beats) {
+        if (b.t !== 'hit' || b.who === P) continue;
+        for (const d of b.damages) {
+          if ((d.hpAfter ?? 0) < 0) {
+            fatal = { type: d.type, raw: d.raw, dealt: d.dealt ?? 0, resist: d.afterResist, ac: d.acCut };
+          }
+        }
+      }
+    }
+    if (fatal) {
+      const band = fight.entities[M]?.damages.find((d) => d.type === fatal!.type);
+      out.push({
+        id: 'killing-blow',
+        severity: 'critical',
+        tag: 'Killing blow',
+        headline: `A ${fatal.raw}-point ${fatal.type} roll finished you.`,
+        body: `It rolled **${fatal.raw}**` +
+          (band ? ` from a ${band.min}–${band.max} band — near the top of its range` : '') +
+          `. Your resistance took it to **${fatal.resist ?? fatal.raw}**, armour absorbed ` +
+          `**${fatal.ac ?? 0}**, and **${fatal.dealt}** still landed. Every earlier hit had bottomed ` +
+          `out at the damage floor; this one did not, because ${fatal.type} is where this monster ` +
+          `actually threatens you — not its ${fight.entities[M]?.damages[0]?.type ?? 'melee'}.`,
+      });
+    }
+  }
+
   // ── Defense ───────────────────────────────────────────────────────────────
+  // Only claim the armour won when the player actually walked away.
   const mit = a.playerMitigation;
-  if (mit.pct >= 75 && mit.incomingRaw > 0) {
-    const band = fight.entities[M]?.damages[0];
+  if (mit.pct >= 75 && mit.incomingRaw > 0 && !playerDied) {
+    // Cite the band that actually threatens, not whichever is listed first.
+    const band = [...(fight.entities[M]?.damages ?? [])].sort((x, y) => y.max - x.max)[0];
     out.push({
       id: 'defense',
       severity: 'good',

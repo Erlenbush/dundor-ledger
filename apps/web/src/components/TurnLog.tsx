@@ -137,6 +137,13 @@ function TurnRow({ turn, item }: { turn: Turn; item: OkFight }) {
         );
         break;
       }
+      case 'effect':
+        rows.push(
+          <div className="beat" key={bi}>
+            <Actor who={b.who} /> procs <span className="effect">{b.effect}</span>
+          </div>,
+        );
+        break;
       case 'dies':
         rows.push(
           <div className="beat head" style={{ color: 'var(--crit)', fontWeight: 700 }} key={bi}>

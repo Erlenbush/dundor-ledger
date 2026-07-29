@@ -102,6 +102,11 @@ the UI renders — nothing the parser emits can inject markup.
   header per fight. Without splitting, fights merge into one record with duplicated turn
   numbers and summed damage — 471 reported where the first fight dealt 211. `splitLogs()`
   handles it; `parseFight()` also stops at the next header as a second line of defence.
+- **`Hp Left` is not `Hp`.** The `FightEntity` header reports what a combatant
+  walked in with; `Hp` inside the nested data block is their maximum. Dundor does
+  not heal you between fights, so these differ often — one real log opens at
+  47/389. Seeding a chart from the maximum invents a 342-point cliff that never
+  happened.
 - **Negative resistance is a vulnerability.** A Lava Golem's `Rcold: -2` means cold lands
   ~33% harder. Filtering the resistance table to positive values hides the single most
   actionable fact about a monster.

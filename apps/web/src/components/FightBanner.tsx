@@ -36,6 +36,11 @@ export function FightBanner({ item }: { item: OkFight }) {
             <span>Opening distance <b>{fight.startDistance ?? '—'} tiles</b></span>
             <span>Closed at <b>turn {a.closedAt ?? '—'}</b></span>
             <span>First swing <b>turn {a.firstAttackTurn ?? '—'}</b></span>
+            {a.startHpPct != null && a.startHpPct < 99.5 ? (
+              <span>
+                Entered <b className="warn">{hp(fight.startHp[a.player], pMax)} HP</b>
+              </span>
+            ) : null}
             <span>Ended <b>{hp(a.finalPlayerHp, pMax)} HP</b> vs <b>{hp(a.finalMonsterHp, mMax)} HP</b></span>
             {fight.ambush ? <span><b>{fight.firstMover}</b> opened unseen</span> : null}
           </div>
