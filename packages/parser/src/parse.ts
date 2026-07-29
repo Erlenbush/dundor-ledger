@@ -11,13 +11,26 @@ const num = (s: string): number | null => {
  *
  * Dundor repeats its "The fight happens between" header per fight. Without
  * splitting, every fight merges into one record with duplicated turn numbers
- * and summed damage.
+ * and summed damage. A paste of bare log sections has no headers at all, so a
+ * "Logs ---" line that no header is waiting for starts a fight too; otherwise
+ * a headerless fight would merge into, or swallow, the fight next to it.
  */
 export function splitLogs(text: string): string[] {
   const lines = text.replace(/\r/g, '').split('\n');
   const starts: number[] = [];
+  // True between a fight's header and its "Logs ---" line.
+  let awaitingLogs = false;
   lines.forEach((l, i) => {
-    if (RE.header.test(l.trim())) starts.push(i);
+    const line = l.trim();
+    if (RE.header.test(line)) {
+      starts.push(i);
+      awaitingLogs = true;
+    } else if (RE.logsHdr.test(line)) {
+      if (awaitingLogs) awaitingLogs = false;
+      // The first headerless fight starts at the top so leading chatter is
+      // kept, matching what parseFight tolerates on a whole paste.
+      else starts.push(starts.length ? i : 0);
+    }
   });
   if (starts.length < 2) return [text];
   return starts.map((s, i) => lines.slice(s, starts[i + 1] ?? lines.length).join('\n'));
@@ -25,7 +38,7 @@ export function splitLogs(text: string): string[] {
 
 /** Flatten a stat block's indented "Key: value" lines. Keys are unique per entity. */
 function parseStatBlock(name: string, lines: string[]): FightEntity {
-  const stats: Record<string, string> = {};
+  const stats: Record<string, string> = Object.create(null);
   for (const raw of lines) {
     const m = raw.match(RE.statLine);
     if (!m) continue;
@@ -93,7 +106,10 @@ export function parseFight(text: string): Fight {
 
   if (logStart < 0) throw new Error('No “Logs ---” section. This is not a Dundor fight log.');
 
-  const entities: Record<string, FightEntity> = {};
+  // Null-prototyped, because keys are Discord handles and "__proto__" is a
+  // legal one: on a default object that assignment mutates the prototype
+  // instead of storing the entity.
+  const entities: Record<string, FightEntity> = Object.create(null);
   for (const [name, blk] of blocks) entities[name] = parseStatBlock(name, blk);
 
   const turns: Turn[] = [];
@@ -121,8 +137,10 @@ export function parseFight(text: string): Fight {
     if (!line) continue;
 
     // A second header is the next fight in a multi-fight paste. Stop, so a
-    // direct call can never bleed one fight into another.
+    // direct call can never bleed one fight into another. A second "Logs ---"
+    // is the same boundary for a paste of bare log sections.
     if (RE.header.test(line)) break;
+    if (RE.logsHdr.test(line)) break;
 
     let m: RegExpMatchArray | null;
 
@@ -219,7 +237,12 @@ export function parseFight(text: string): Fight {
   // Resolve identity from the log body, so a log pasted without its stat header
   // still works. Order of first appearance decides when nothing else can.
   const seen: string[] = [];
-  const observedMax: Record<string, number> = {};
+  const observedMax: Record<string, number> = Object.create(null);
+  // Entry HP recovered from the body: the first current HP a beat reports,
+  // plus whatever damage the entity had already taken by then. Without it a
+  // headerless log seeds a wounded combatant at maximum and charts a cliff.
+  const firstHp: Record<string, number> = Object.create(null);
+  const damageBefore: Record<string, number> = Object.create(null);
   for (const t of turns) {
     for (const b of t.beats) {
       const who = 'who' in b ? b.who : null;
@@ -227,6 +250,13 @@ export function parseFight(text: string): Fight {
       if (!seen.includes(who)) seen.push(who);
       const hpMax = 'hpMax' in b ? b.hpMax : undefined;
       if (hpMax) observedMax[who] = Math.max(observedMax[who] ?? 0, hpMax);
+      if (b.t === 'gains' && !(who in firstHp)) {
+        firstHp[who] = b.hp + (damageBefore[who] ?? 0);
+      }
+      if (b.t === 'damaged') {
+        if (!(who in firstHp)) firstHp[who] = b.hp + b.amount + (damageBefore[who] ?? 0);
+        damageBefore[who] = (damageBefore[who] ?? 0) + b.amount;
+      }
     }
   }
 
@@ -255,7 +285,8 @@ export function parseFight(text: string): Fight {
   // `Hp` (inside PlayerData/MonsterData) is the maximum; `Hp Left` on the
   // FightEntity above it is what the combatant actually walked in with.
   const declared = (n: string) => statNum(n, 'Hp');
-  const opening = (n: string) => statNum(n, 'Hp Left') ?? declared(n) ?? observedMax[n] ?? null;
+  const opening = (n: string) =>
+    statNum(n, 'Hp Left') ?? firstHp[n] ?? declared(n) ?? observedMax[n] ?? null;
 
   return {
     playerName: player,

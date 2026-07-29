@@ -478,3 +478,177 @@ describe('insights', () => {
     expect(ids).not.toContain('overkill');
   });
 });
+
+// The section below pins fixes from an adversarial review: each block names
+// the defect it guards against.
+
+const logsOnly = (name: string): string => {
+  const lines = read(name).split('\n');
+  const at = lines.findIndex((l) => /^Logs\s*-{5,}\s*$/.test(l.trim()));
+  return lines.slice(at).join('\n');
+};
+
+describe('headerless multi-fight pastes', () => {
+  // splitLogs keyed only on the fight header, so a bare log section next to
+  // another fight either swallowed it whole or merged into it.
+  it('splits a bare log section followed by a complete fight', () => {
+    const chunks = splitLogs(`${logsOnly('magma-golem-loss-xl35.txt')}\n${read('lava-golem-xl24.txt')}`);
+    expect(chunks).toHaveLength(2);
+    expect(chunks.map((c) => parseFight(c).outcome.winner)).toEqual(['Magma Golem', 'food_']);
+  });
+
+  it('splits two bare log sections', () => {
+    const one = logsOnly('lava-golem-xl24.txt');
+    const chunks = splitLogs(`${one}\n${one}`);
+    expect(chunks).toHaveLength(2);
+    for (const c of chunks) {
+      const a = analyze(parseFight(c));
+      expect(a.stats[a.player]!.dealt).toBe(211);
+    }
+  });
+
+  it('splits a complete fight followed by a bare log section', () => {
+    const chunks = splitLogs(`${read('lava-golem-xl24.txt')}\n${logsOnly('lava-golem-xl25.txt')}`);
+    expect(chunks).toHaveLength(2);
+  });
+
+  it('stops a direct parse at a second log section', () => {
+    const one = logsOnly('lava-golem-xl24.txt');
+    const a = analyze(parseFight(`${one}\n${one}`));
+    expect(new Set(a.turnsSeen).size).toBe(a.turnsSeen.length);
+    expect(a.stats[a.player]!.dealt).toBe(211);
+  });
+
+  it('still keeps a lone bare log section whole', () => {
+    const one = logsOnly('lava-golem-xl24.txt');
+    expect(splitLogs(one)).toEqual([one]);
+  });
+});
+
+describe('a player named __proto__', () => {
+  // Entity records were plain objects, so entities['__proto__'] mutated the
+  // prototype instead of storing the entity and headerless parses threw.
+  const text = [
+    'The fight happens between __proto__ and Lava Golem!',
+    'Logs ------------',
+    'TURN 1 ------------',
+    '[__proto__] gains 1.0 moves. Moves left = 1.0. HP left: 40/40. Mana left: 0/0.',
+    '[Lava Golem] gets damaged by 9 damage! HP Left = -4/15.',
+    '[Lava Golem] dies!',
+    '[__proto__] wins the fight because [Lava Golem] has died!',
+  ].join('\n');
+
+  it('parses instead of throwing', () => {
+    const fight = parseFight(text);
+    expect(fight.playerName).toBe('__proto__');
+    expect(Object.keys(fight.entities)).toContain('__proto__');
+    expect(fight.entities['__proto__']!.synthesized).toBe(true);
+  });
+
+  it('analyzes and exports like any other name', () => {
+    const out = exportFights(text, 'proto.txt');
+    expect(out).toHaveLength(1);
+    expect(out[0]).not.toHaveProperty('error');
+  });
+});
+
+describe('entry HP without stat blocks', () => {
+  // opening() fell back to the observed maximum, resurrecting the phantom
+  // HP cliff for the documented headerless shapes.
+  const fight = parseFight(logsOnly('magma-golem-loss-xl35.txt'));
+  const a = analyze(fight);
+
+  it('recovers what the player walked in with from the log body', () => {
+    expect(fight.startHp['food_']).toBe(47);
+    expect(a.startHpPct).toBeCloseTo(12.08, 1);
+  });
+
+  it('does not chart a cliff the player never took', () => {
+    const series = a.series['food_']!;
+    expect(series[0]).toEqual({ turn: 0, hp: 47 });
+    const drops = series.slice(1).map((p, i) => (series[i]!.hp ?? 0) - (p.hp ?? 0));
+    expect(Math.max(...drops)).toBe(52);
+  });
+
+  it('still surfaces the entry HP insight', () => {
+    expect(deriveInsights(fight, a).map((i) => i.id)).toContain('low-hp-start');
+  });
+});
+
+describe('killing-blow narrative honesty', () => {
+  // The insight hardcoded "near the top of its range" and "every earlier hit
+  // had bottomed out at the damage floor" regardless of the data.
+  it('keeps the story on the real loss, where the log backs it', () => {
+    const { fight, analysis } = load('magma-golem-loss-xl35.txt');
+    const body = deriveInsights(fight, analysis).find((i) => i.id === 'killing-blow')!.body;
+    expect(body).toContain('near the top of its range');
+    expect(body).toContain('Every earlier hit had bottomed out');
+  });
+
+  it('describes a bottom-of-band killing roll honestly', () => {
+    const text = read('magma-golem-loss-xl35.txt')
+      .replace('rolls 340 for :fire: fire!', 'rolls 110 for :fire: fire!');
+    const fight = parseFight(text);
+    const body = deriveInsights(fight, analyze(fight)).find((i) => i.id === 'killing-blow')!.body;
+    expect(body).toContain('near the bottom of its range');
+    expect(body).not.toContain('near the top');
+  });
+
+  it('drops the floor claim when earlier hits dealt real damage', () => {
+    const fight = parseFight([
+      'The fight happens between food_ and Dragon!',
+      'Logs ------------',
+      'TURN 1 ------------',
+      '[food_] gains 1.0 moves. Moves left = 1.0. HP left: 118/118. Mana left: 0/0.',
+      '[Dragon] hits [food_] with a melee attack! Applying each damage. [evade roll: 99.0 > 5.0].',
+      '[Dragon] rolls 40 for :fire: fire!',
+      '[food_] gets damaged by 20 damage! HP Left = 98/118.',
+      'TURN 2 ------------',
+      '[Dragon] hits [food_] with a melee attack! Applying each damage. [evade roll: 99.0 > 5.0].',
+      '[Dragon] rolls 150 for :fire: fire!',
+      '[food_] gets damaged by 120 damage! HP Left = -22/118.',
+      '[food_] dies!',
+      '[Dragon] wins the fight because [food_] has died!',
+    ].join('\n'));
+    const body = deriveInsights(fight, analyze(fight)).find((i) => i.id === 'killing-blow')!.body;
+    expect(body).not.toContain('bottomed out at the damage floor');
+    expect(body).not.toContain('its range');
+  });
+});
+
+describe('insights on degraded input', () => {
+  it('does not credit the armour for a fight with no outcome', () => {
+    // Truncated before TURN 12: 99% mitigation so far, but the player is at
+    // 45/389 against the monster that kills them one turn later.
+    const text = read('magma-golem-loss-xl35.txt');
+    const fight = parseFight(text.slice(0, text.indexOf('TURN 12')));
+    expect(fight.outcome.decided).toBe(false);
+    const ids = deriveInsights(fight, analyze(fight)).map((i) => i.id);
+    expect(ids).not.toContain('defense');
+  });
+
+  it('never renders the word undefined for a stat-less fight', () => {
+    // Landing 2 of 6 swings fires the accuracy insight, which used to
+    // interpolate the synthesized entity's missing stats verbatim.
+    const swing = (n: number, hit: boolean) => hit
+      ? [
+          '[food_] hits [goblin] with a melee attack! Applying each damage. [evade roll: 99.0 > 50.0].',
+          '[food_] rolls 5 for :punch: physical!',
+          `[goblin] gets damaged by 5 damage! HP Left = ${40 - 5 * n}/40.`,
+        ]
+      : ['[food_] tries attacking in melee but misses! [evade roll: 5.0 <= 50.0]'];
+    const fight = parseFight([
+      'Logs ------------',
+      'TURN 1 ------------',
+      '[food_] gains 1.0 moves. Moves left = 1.0. HP left: 30/30. Mana left: 0/0.',
+      ...swing(1, true), ...swing(2, false), ...swing(3, false),
+      ...swing(4, false), ...swing(5, false), ...swing(6, true),
+    ].join('\n'));
+    const insights = deriveInsights(fight, analyze(fight));
+    expect(insights.map((i) => i.id)).toContain('accuracy');
+    for (const i of insights) {
+      expect(i.headline).not.toContain('undefined');
+      expect(i.body).not.toContain('undefined');
+    }
+  });
+});

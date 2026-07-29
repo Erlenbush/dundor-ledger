@@ -1,4 +1,4 @@
-import { PIP_PCT, RES_KEYS } from './constants.js';
+import { DAMAGE_FLOOR, PIP_PCT, RES_KEYS } from './constants.js';
 import { attackCost } from './analyze.js';
 import type { Analysis, Fight, Insight } from './types.js';
 
@@ -74,10 +74,14 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       severity: 'warning',
       tag: 'Accuracy',
       headline: `You landed ${mine.hits} of ${plural(mine.attacks, 'swing')}.`,
-      body: `Melee accuracy **${acc}** against evasion **${ev}** left you missing ` +
+      // Synthesized entities carry no stats, so name the numbers only when
+      // the log actually printed them.
+      body: (acc != null && ev != null
+          ? `Melee accuracy **${acc}** against evasion **${ev}** left you missing `
+          : 'You missed ') +
         `**${pct(100 - a.playerHitRate)}** of the time. Every miss is a full turn of nothing. ` +
         `With damage this far ahead of the target's health pool, accuracy rather than power is ` +
-        `shortens these fights.`,
+        `what shortens these fights.`,
     });
   }
 
@@ -121,39 +125,55 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
   // ── The blow that ended it ────────────────────────────────────────────────
   if (playerDied) {
     let fatal: { type: string; raw: number; dealt: number; resist?: number; ac?: number } | null = null;
+    const earlier: number[] = [];
     for (const t of fight.turns) {
       for (const b of t.beats) {
         if (b.t !== 'hit' || b.who === P) continue;
         for (const d of b.damages) {
           if ((d.hpAfter ?? 0) < 0) {
             fatal = { type: d.type, raw: d.raw, dealt: d.dealt ?? 0, resist: d.afterResist, ac: d.acCut };
+          } else if (fatal == null && d.dealt != null) {
+            earlier.push(d.dealt);
           }
         }
       }
     }
     if (fatal) {
       const band = fight.entities[M]?.damages.find((d) => d.type === fatal!.type);
+      const pos = band && band.max > band.min ? (fatal.raw - band.min) / (band.max - band.min) : null;
+      const where = pos == null ? ''
+        : pos >= 0.8 ? ', near the top of its range'
+        : pos <= 0.2 ? ', near the bottom of its range'
+        : `, the ${ordinal(Math.round(pos * 100))} percentile of its range`;
+      const allFloored = earlier.length > 0 && earlier.every((v) => v <= DAMAGE_FLOOR);
+      const usual = fight.entities[M]?.damages[0]?.type;
       out.push({
         id: 'killing-blow',
         severity: 'critical',
         tag: 'Killing blow',
         headline: `A ${fatal.raw}-point ${fatal.type} roll finished you.`,
         body: `It rolled **${fatal.raw}**` +
-          (band ? ` from a ${band.min}–${band.max} band, near the top of its range` : '') +
+          (band ? ` from a ${band.min}–${band.max} band${where}` : '') +
           `. Your resistance took it to **${fatal.resist ?? fatal.raw}**, armour absorbed ` +
-          `**${fatal.ac ?? 0}**, and **${fatal.dealt}** still landed. Every earlier hit had bottomed ` +
-          `out at the damage floor; this one did not, because ${fatal.type} is where this monster ` +
-          `actually threatens you, not its ${fight.entities[M]?.damages[0]?.type ?? 'melee'}.`,
+          `**${fatal.ac ?? 0}**, and **${fatal.dealt}** still landed.` +
+          (allFloored
+            ? ' Every earlier hit had bottomed out at the damage floor; this one did not.'
+            : '') +
+          (usual && usual !== fatal.type
+            ? ` ${cap(fatal.type)} is where this monster actually threatens you, not its ${usual}.`
+            : ''),
       });
     }
   }
 
   // ── Defense ───────────────────────────────────────────────────────────────
-  // Only claim the armour won when the player actually walked away.
+  // Only claim the armour won when the player actually walked away with the
+  // win. A log truncated before the outcome proves nothing about the armour.
   const mit = a.playerMitigation;
-  if (mit.pct >= 75 && mit.incomingRaw > 0 && !playerDied) {
+  if (mit.pct >= 75 && mit.incomingRaw > 0 && fight.outcome.decided && !playerDied) {
     // Cite the band that actually threatens, not whichever is listed first.
     const band = [...(fight.entities[M]?.damages ?? [])].sort((x, y) => y.max - x.max)[0];
+    const ac = stat(fight, P, 'Ac');
     out.push({
       id: 'defense',
       severity: 'good',
@@ -162,8 +182,8 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       body: `It connected on ${a.monsterHitRate != null ? pct(a.monsterHitRate) : 'most'} of its ` +
         `swings and still could not hurt you. **${mit.incomingRaw} damage** was rolled at you across ` +
         `${plural(theirs.attacks, 'attack')}; you took **${mit.taken}**, so **${pct(mit.pct)}** was absorbed. ` +
-        `AC **${stat(fight, P, 'Ac')}** against ${band ? `${band.min}–${band.max}` : 'its small'} hits ` +
-        `means every blow bottoms out at the **1 damage floor**` +
+        `${ac != null ? `AC **${ac}** against` : 'Against'} ${band ? `${band.min}–${band.max}` : 'its small'} hits ` +
+        `${ac != null ? 'means ' : ''}every blow bottoms out at the **1 damage floor**` +
         (mit.flooredHits ? `, which is exactly what happened all ${mit.flooredHits} times` : '') +
         `. Note the log claims **${mit.acStated}** reduced, but only **${mit.absorbed}** was ever ` +
         `there to reduce. A huge AC roll against a small hit still only absorbs that hit.`,
