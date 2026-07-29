@@ -1,0 +1,38 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # check:sample runs first via pretest, so a hand-edit that reintroduces
+      # personal data into the shipped sample fails here.
+      - name: Parser suite
+        run: npm test
+
+      # Builds the parser to dist/ (the Python end-to-end test runs its CLI)
+      # and typechecks the web app.
+      - name: Typecheck
+        run: npm run typecheck
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Python suite
+        run: |
+          pip install pandas pytest
+          python -m pytest analysis/
