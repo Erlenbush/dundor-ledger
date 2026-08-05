@@ -66,38 +66,34 @@ export function buildReply({ fights, problems, logText, webUrl }: ReplyOptions):
 
   const content = notes.join('\n\n');
 
+  // A markdown link in the description, not a link button.
+  //
+  // Buttons were the obvious choice — they are what the playerbase already
+  // uses, and a component does not consume the embed's 6,000 character budget
+  // the way a link in the description does. Measuring Discord killed it: a
+  // button's `url` is capped at 512 characters ("Must be 512 or fewer in
+  // length"), and the smallest real log needs about 1,545. The property that
+  // looked like the advantage was the constraint. A description accepts at
+  // least 4,000, so that is where the link goes; MAX_LINK_CHARS is set below
+  // the measured ceiling with room for this text.
+  //
+  // Only the first embed carries the link: it belongs to the upload, not to
+  // each fight, and repeating a multi-kilobyte URL per embed would blow the
+  // 6,000 character total.
+  const linkLine = link ? `\n\n[${link.full ? 'Open full breakdown' : 'Open the analyzer'}](${link.url})` : '';
+
   return {
-    embeds: shown.map((f) => {
+    embeds: shown.map((f, i) => {
       const e = formatFight(f, detailed);
       return {
         title: e.title,
-        description: e.description,
+        description: i === 0 ? `${e.description}${linkLine}` : e.description,
         color: e.color,
         fields: e.fields,
         footer: { text: e.footer },
       };
     }),
     ...(content ? { content } : {}),
-    ...(link
-      ? {
-          components: [
-            {
-              type: 1,
-              components: [
-                {
-                  type: 2,
-                  style: 5,
-                  // Only true when the fight actually rides in the URL. On
-                  // the over-budget fallback `link.url` is the bare site with
-                  // nothing attached, and "Open full breakdown" would lie.
-                  label: link.full ? 'Open full breakdown' : 'Open the analyzer',
-                  url: link.url,
-                },
-              ],
-            },
-          ],
-        }
-      : {}),
     allowedMentions: { repliedUser: false },
   };
 }

@@ -15,8 +15,15 @@ const fightsIn = (name: string): { fights: ExportedFight[]; text: string } => {
   return { fights, text };
 };
 
-const button = (draft: ReturnType<typeof buildReply>): { url: string; label: string } =>
-  (draft.components as Array<{ components: Array<{ url: string; label: string }> }>)[0]!.components[0]!;
+/** The link now lives in the first embed's description, not a component. */
+const firstDescription = (draft: ReturnType<typeof buildReply>): string =>
+  (draft.embeds as Array<{ description: string }>)[0]!.description;
+
+/** Pull the markdown link out of the first embed, or null when there is none. */
+const link = (draft: ReturnType<typeof buildReply>): { label: string; url: string } | null => {
+  const m = /\[([^\]]+)\]\((https?:\/\/[^)]+)\)/.exec(firstDescription(draft));
+  return m ? { label: m[1]!, url: m[2]! } : null;
+};
 
 /** A real DiscordAPIError, the shape sendReply's catch actually narrows on. */
 const discordError = (status: number, message: string, body: unknown = {}): DiscordAPIError =>
@@ -31,26 +38,30 @@ const discordError = (status: number, message: string, body: unknown = {}): Disc
 
 
 describe('buildReply', () => {
-  it('adds no button when no site is configured', () => {
+  it('adds no link when no site is configured', () => {
     const { fights, text } = fightsIn('snake-xl100.txt');
     const draft = buildReply({ fights, problems: [], logText: text, webUrl: null });
+    expect(link(draft)).toBeNull();
     expect(draft.components).toBeUndefined();
     expect(draft.embeds).toHaveLength(1);
   });
 
-  it('adds a link button carrying the log when a site is configured', () => {
+  it('adds a markdown link carrying the log when a site is configured', () => {
     const { fights, text } = fightsIn('snake-xl100.txt');
     const draft = buildReply({ fights, problems: [], logText: text, webUrl: 'https://x.dev' });
-    expect(button(draft).url).toContain('/#log=g1.');
-    expect(button(draft).label).toBe('Open full breakdown');
+    expect(link(draft)!.url).toContain('/#log=g1.');
+    expect(link(draft)!.label).toBe('Open full breakdown');
   });
 
-  it('uses a link-style button in a single action row', () => {
+  it('never uses a component, because a button url is capped at 512 characters', () => {
     const { fights, text } = fightsIn('snake-xl100.txt');
     const draft = buildReply({ fights, problems: [], logText: text, webUrl: 'https://x.dev' });
-    expect(draft.components).toEqual([
-      { type: 1, components: [{ type: 2, style: 5, label: 'Open full breakdown', url: expect.any(String) }] },
-    ]);
+    // Discord rejects a button whose url exceeds 512 ("Must be 512 or fewer in
+    // length"), and the smallest real log needs about 1,545. Measured, not
+    // assumed: the first version of this shipped a button and every real log
+    // would have been silently dropped.
+    expect(draft.components).toBeUndefined();
+    expect(firstDescription(draft)).toContain('](');
   });
 
   it('points at the bare site, says so, and uses the fallback label when the fight is too long', () => {
@@ -64,10 +75,10 @@ describe('buildReply', () => {
       logText: fixture('fungus-creature-loss-xl63.txt'),
       webUrl: 'https://x.dev',
     });
-    expect(button(draft).url).toBe('https://x.dev');
+    expect(link(draft)!.url).toBe('https://x.dev');
     // 'Open full breakdown' would lie here: the fallback URL is the bare site
     // with no fight attached to it.
-    expect(button(draft).label).toBe('Open the analyzer');
+    expect(link(draft)!.label).toBe('Open the analyzer');
     expect(draft.content).toContain('too long to link');
   });
 
@@ -107,6 +118,61 @@ describe('buildReply', () => {
     expect((draft.content!.match(/too long to link/g) ?? []).length).toBe(1);
   });
 
+  it('keeps the first embed inside Discord\'s 4096 character description cap', () => {
+    // The link shares the description with the fight summary lines, so the
+    // budget has to leave room for both. Measured: a description is accepted
+    // at 4,000; the cap is 4,096.
+    const { fights, text } = fightsIn('two-fights-one-paste.txt');
+    const draft = buildReply({
+      fights,
+      problems: [],
+      logText: text,
+      webUrl: 'https://dundor-ledger.nuclidelabs.com',
+    });
+    expect(firstDescription(draft).length).toBeLessThanOrEqual(4096);
+  });
+
+  it('keeps the whole embed inside Discord\'s 6000 character cap', () => {
+    // Fields, description, title and footer all count against one total. A
+    // long log plus a fight with many insights is the case that could breach
+    // it, so measure the real worst case rather than trusting the URL budget.
+    const { fights, text } = fightsIn('ghoul-loss-xl100.txt');
+    const draft = buildReply({
+      fights,
+      problems: [],
+      logText: text,
+      webUrl: 'https://dundor-ledger.nuclidelabs.com',
+    });
+    const e = (draft.embeds as Array<{
+      title: string;
+      description: string;
+      fields: Array<{ name: string; value: string }>;
+      footer: { text: string };
+    }>)[0]!;
+    const total =
+      e.title.length +
+      e.description.length +
+      e.fields.reduce((n, f) => n + f.name.length + f.value.length, 0) +
+      e.footer.text.length;
+    expect(total).toBeLessThanOrEqual(6000);
+  });
+
+  it('puts the link on the first embed only, not once per fight', () => {
+    // The link belongs to the upload, not to each fight. Repeating a
+    // multi-kilobyte URL per embed would breach the 6000 character total.
+    const { fights, text } = fightsIn('two-fights-one-paste.txt');
+    const draft = buildReply({
+      fights,
+      problems: [],
+      logText: text,
+      webUrl: 'https://x.dev',
+    });
+    const descriptions = (draft.embeds as Array<{ description: string }>).map((e) => e.description);
+    expect(descriptions.length).toBeGreaterThan(1);
+    expect(descriptions[0]).toContain('](');
+    expect(descriptions.slice(1).some((d) => d.includes(']('))).toBe(false);
+  });
+
   it('still reports problems alongside the embeds', () => {
     const { fights, text } = fightsIn('snake-xl100.txt');
     const draft = buildReply({
@@ -124,11 +190,11 @@ describe('buildReply', () => {
       .toEqual({ repliedUser: false });
   });
 
-  it('omits the button when several files were uploaded at once', () => {
+  it('omits the link when several files were uploaded at once', () => {
     // One link carries one file, so a multi-file upload has no single log to link.
     const { fights } = fightsIn('snake-xl100.txt');
     const draft = buildReply({ fights, problems: [], logText: null, webUrl: 'https://x.dev' });
-    expect(draft.components).toBeUndefined();
+    expect(link(draft)).toBeNull();
   });
 });
 

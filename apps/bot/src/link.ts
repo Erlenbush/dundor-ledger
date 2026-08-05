@@ -13,13 +13,28 @@ import { gzipSync } from 'node:zlib';
 export const SCHEME = 'g1';
 
 /**
- * Longest URL to put on a link button.
+ * Longest URL to put in an embed description.
  *
- * Discord does not document a ceiling and discord.js does not enforce one, so
- * this stays conservative until scripts/probe-button-url.mjs measures the real
- * limit. Every fixture except the 44-turn Fungus log encodes under 3,000.
+ * Measured against the live API rather than guessed, because the guess was
+ * wrong in a way that could not work:
+ *
+ *   link button `url`              512   <- kills carrying a log this way
+ *   embed `url` (clickable title)  2048
+ *   embed description             >4000
+ *
+ * The smallest real log needs about 1,545 characters at the production origin,
+ * so a button was never viable regardless of budget. The description is, and
+ * 3,700 leaves room for the fight summary lines and the markdown syntax that
+ * share it (about 104 characters) inside the 4,096 description cap, and for
+ * the insight fields inside the 6,000 whole-embed cap.
+ *
+ * This covers raw logs to roughly 31,000 characters. Longer fights — the
+ * 44-turn Fungus fixture is 39,109 — fall back to the bare site. Brotli would
+ * reach about 44,600 but is not in the browser's DecompressionStream, so it
+ * needs a decoder in the bundle; the `g1` scheme tag exists so a `b1` can be
+ * added later without breaking links already posted.
  */
-export const MAX_LINK_CHARS = 3_000;
+export const MAX_LINK_CHARS = 3_700;
 
 export function encodeLog(text: string): string {
   return `${SCHEME}.${gzipSync(text, { level: 9 }).toString('base64url')}`;
