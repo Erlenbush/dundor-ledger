@@ -517,3 +517,57 @@ describe('insights', () => {
     expect(ids).not.toContain('overkill');
   });
 });
+
+describe('Icecorn, a vulnerability that is not cold', () => {
+  // Every other fixture's vulnerable monster is weak to cold, so a matchup bug
+  // that favoured cold would pass all of them. This one is weak to fire while
+  // resisting cold at Rcold 6, which is the opposite shape.
+  const { fight, analysis } = load('icecorn-xl63.txt');
+  const byId = Object.fromEntries(deriveInsights(fight, analysis).map((i) => [i.id, i]));
+
+  it('names fire rather than the cold every other fixture uses', () => {
+    expect(byId['matchup']!.headline).toContain('fire');
+    expect(byId['matchup']!.headline).not.toContain('cold');
+  });
+
+  it('does not mistake a resisted element for a vulnerable one', () => {
+    // Rcold is +6 here. Reading magnitude without sign would surface cold.
+    expect(byId['matchup']!.body).toContain('Rfire -5');
+  });
+
+  it('quantifies the swap from the rolls actually made', () => {
+    expect(byId['matchup']!.body).toContain('**328**');
+    expect(byId['matchup']!.body).toContain('**108**');
+  });
+
+  it('reads a flawless win as untouched', () => {
+    expect(analysis.playerMitigation.taken).toBe(0);
+    expect(analysis.stats[analysis.player]!.dealt).toBe(1149);
+  });
+});
+
+describe('Snake, the degenerate small fight', () => {
+  const { fight, analysis } = load('snake-xl100.txt');
+
+  it('counts turns across a gap in the numbering', () => {
+    // The log jumps from TURN 6 to TURN 8; there is no TURN 7 line at all.
+    expect(analysis.turnsSeen).not.toContain(7);
+    expect(analysis.totalTurns).toBe(10);
+  });
+
+  it('survives taking more damage than was ever rolled', () => {
+    // The snake rolled 0, AC absorbed 3, and 1 still landed on the damage
+    // floor. Mitigation has no meaningful denominator in that case.
+    expect(analysis.playerMitigation.incomingRaw).toBe(0);
+    expect(analysis.playerMitigation.taken).toBe(1);
+    expect(analysis.playerMitigation.absorbed).toBe(0);
+    expect(Number.isFinite(analysis.playerMitigation.pct)).toBe(true);
+  });
+
+  it('derives only what a trivial fight supports', () => {
+    const ids = deriveInsights(fight, analysis).map((i) => i.id);
+    expect(ids).toContain('overkill');
+    expect(ids).not.toContain('matchup');
+    expect(ids).not.toContain('accuracy');
+  });
+});

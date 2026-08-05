@@ -84,7 +84,16 @@ export function formatFight(entry: ExportedFight, detailed = true): FightEmbed {
     fields: [
       ...insightFields,
       { name: 'Damage', value: `${me.dealt} dealt / ${mit.taken} taken`, inline: true },
-      { name: 'Mitigated', value: pct(mit.pct), inline: true },
+      {
+        name: 'Mitigated',
+        // With nothing rolled at you there is no denominator, and the parser
+        // reports 0. Printing "0%" on a fight you walked out of untouched
+        // reads as though your armour failed, so say there was nothing to
+        // absorb instead. The damage floor means `taken` can still be above
+        // zero here, since a roll of 0 can land 1.
+        value: mit.incomingRaw === 0 ? 'nothing rolled at you' : pct(mit.pct),
+        inline: true,
+      },
       {
         name: 'Hit rate',
         value:

@@ -145,6 +145,17 @@ describe('formatFight, shared behaviour', () => {
     expect(formatFight(fungus(), true).footer).toContain('fungus.txt');
   });
 
+  it('does not report 0% mitigation on a fight nothing was rolled at', () => {
+    const [only] = exportFights(fixture('icecorn-xl63.txt'), 'icecorn.txt');
+    if (only === undefined || 'error' in only) throw new Error('fixture failed to parse');
+    expect(only.analysis.playerMitigation.incomingRaw).toBe(0);
+    expect(statOf(formatFight(only, true), 'Mitigated')).toBe('nothing rolled at you');
+  });
+
+  it('still reports a real mitigation percentage when there is one', () => {
+    expect(statOf(formatFight(fungus(), true), 'Mitigated')).toBe('94.1%');
+  });
+
   it('handles a fight with no insights at all', () => {
     const embed = formatFight(synthetic([]), true);
     expect(embed.fields.filter((f) => !f.inline)).toHaveLength(0);

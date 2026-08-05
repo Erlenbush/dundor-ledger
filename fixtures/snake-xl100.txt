@@ -1,0 +1,122 @@
+The fight happens between food_ and Snake!
+Stats for food_ ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 949
+  Mana Left: 13
+  - stats:
+    PlayerData:
+      Hp: 949
+      Mana: 13
+      Rfire: 0
+      Rcold: 0
+      Rpois: 0
+      Relec: 0
+      Revil: 0
+      Racid: 0
+      Spirit: 0
+      See Invis: 0
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 3
+      Ev: 10
+      Sh: 3
+      Damages: [DamageInfo(type=:punch: physical, min_amount=23, max_amount=77)]
+      Attack Speed: 0.6
+      Melee Accuracy: 16.0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.6
+      Stab Multiplier: 1.5
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: food_
+      Effect Power Level: 0
+      Spells: []
+      User Id: 123369068005818368
+      Resurrection: 10
+      God: None
+      Str : 10
+      Dex: 10
+      Int : 10
+      Xl: 100
+  Melee Evade Chance: 13.587289700909427
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: food_
+  Is Silenced: False
+Stats for Snake ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 5
+  Mana Left: 0
+  - stats:
+    MonsterData:
+      Hp: 5
+      Mana: 0
+      Rfire: 0
+      Rcold: 0
+      Rpois: 0
+      Relec: 0
+      Revil: 0
+      Racid: 0
+      Spirit: 0
+      See Invis: False
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 0
+      Ev: 10
+      Sh: 0
+      Damages: [DamageInfo(type=:punch: physical, min_amount=0, max_amount=2)]
+      Attack Speed: 0.6
+      Melee Accuracy: 0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 0.0
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: Snake
+      Effect Power Level: 0
+  Melee Evade Chance: 0.24726231566347745
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: Snake
+  Is Silenced: False
+  Affected By Holy Damage: False
+Logs ------------------------------------------------------------------------------------------
+The distance between you is 8 tiles.
+[food_] starts first because [Snake] hasn't noticed them yet.
+TURN 1 ------------------------------------------------------------------------------------------
+[food_] successfully sneaks 1 space closer without being detected! Distance left = 7.
+TURN 2 ------------------------------------------------------------------------------------------
+[food_] successfully sneaks 1 space closer without being detected! Distance left = 6.
+TURN 3 ------------------------------------------------------------------------------------------
+[food_] successfully sneaks 1 space closer without being detected! Distance left = 5.
+TURN 4 ------------------------------------------------------------------------------------------
+[food_] successfully sneaks 1 space closer without being detected! Distance left = 4.
+TURN 5 ------------------------------------------------------------------------------------------
+[food_] successfully sneaks 1 space closer without being detected! Distance left = 3.
+TURN 6 ------------------------------------------------------------------------------------------
+[food_] sneaks 1 space closer but alerts [Snake]! Distance left = 2. Turn ended for [food_].
+[Snake] gains 1.0 moves. Moves left = 1.0. HP left: 5/5. Mana left: 0/0.
+[Snake] moves 1 space closer to [food_]. Distance left = 1.
+[Snake] uses 1.0 moves! Moves left = 0.0.
+TURN 8 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 949/949. Mana left: 13/13.
+[food_] moves 1 space closer to [Snake]. Distance left = 0.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 9 ------------------------------------------------------------------------------------------
+[Snake] gains 1.0 moves. Moves left = 1.0. HP left: 5/5. Mana left: 0/0.
+[Snake] hits [food_] with a melee attack! Applying each damage. [evade roll: 62.89699 > 13.58729].
+[Snake] rolls 0 for :punch: physical!
+[food_] rolls 3 for AC and reduces the damage by 3! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 948/949.
+[Snake] uses 0.60 moves! Moves left = 0.4.
+TURN 10 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 948/949. Mana left: 13/13.
+[food_] hits [Snake] with a melee attack! Applying each damage. [evade roll: 31.01345 > 0.24726].
+[food_] rolls 43 for :punch: physical!
+[Snake] rolls 0 for AC and reduces the damage by 0! Damage Left = 43
+[Snake] gets damaged by 43 damage! HP Left = -38/5.
+[food_] uses 0.60 moves! Moves left = 0.4.
+[Snake] dies!
+[food_] wins the fight because [Snake] has died!
