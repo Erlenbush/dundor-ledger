@@ -41,6 +41,36 @@ Running staging and production at the same time would need a **second Discord
 application** with its own token. Two processes sharing one token in one server
 answer every log twice.
 
+**Decided 2026-08-05:** stay on one application until rollout. At rollout, point
+this deployment at production and register a separate application for
+development. A second application before there are users to serve is overhead
+for nothing.
+
+At rollout the switch is two commands on bespin:
+
+```bash
+sed -i 's/^DUNDOR_APP_ID=.*/DUNDOR_APP_ID=1284876985822216232/' \
+  /home/dundor/dundor-ledger/apps/bot/.env
+systemctl restart dundor-bot
+```
+
+The startup log line names the ID it is watching, so `journalctl -u dundor-bot
+-n 1` confirms it took.
+
+The development bot does not need a second service on this droplet. It can run
+on devbuntu against its own token, which keeps the 961 MB box serving one
+process:
+
+```bash
+cd ~/dundor-ledger
+DISCORD_TOKEN=<dev token> DUNDOR_APP_ID=1344251040970571818 \
+  npm run start -w @dundor/bot
+```
+
+The new application needs the same setup as this one: Message Content Intent
+enabled, and an invite carrying permissions `84992`. The token and public key
+warning below applies again.
+
 To read those IDs off Discord yourself: enable Developer Mode in Discord
 settings, then right click the bot and Copy User ID.
 
