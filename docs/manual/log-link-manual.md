@@ -117,6 +117,23 @@ journalctl -u dundor-bot -n 20 --no-pager
 
 `deploy/deploy-bot.sh` excludes `.env` from rsync, so this survives redeploys.
 
+- [ ] Add the setting to the committed template, by hand
+
+`apps/bot/.env.example` is covered by the global `protect-files` hook, so agents
+cannot edit it and it will not get updated for you. Append:
+
+```
+# Optional: base URL of the web UI. Set it and replies carry an "Open full
+# breakdown" button. Unset means no button.
+# LEDGER_WEB_URL=https://dundor-ledger.example.workers.dev
+# Optional: per-user cooldown in seconds for !ledger pull. Defaults to 30,
+# and 0 disables it.
+# LEDGER_PULL_COOLDOWN_SECONDS=30
+```
+
+`LEDGER_PULL_COOLDOWN_SECONDS` is missing from that file for the same reason and
+has been since it was added, so this closes both gaps at once.
+
 ## 5. Verify
 
 - [ ] Upload a small log and confirm the button appears
