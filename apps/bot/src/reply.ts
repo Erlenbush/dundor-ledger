@@ -100,7 +100,15 @@ export async function sendReply(
     await target.reply(draft);
   } catch (err) {
     if (!draft.components) throw err;
-    console.error('reply with components was rejected, retrying without:', err);
+    // Message only, never the raw error: discord.js's DiscordAPIError carries
+    // an own `requestBody` property with the rejected payload, which for this
+    // call is the button that embeds the log. Logging the error object would
+    // put log content in server logs, which is exactly what we promise never
+    // to do — do not "fix" this back to the full object.
+    console.error(
+      'reply with components was rejected, retrying without:',
+      err instanceof Error ? err.message : String(err),
+    );
     const { components: _dropped, ...rest } = draft;
     await target.reply(rest);
   }

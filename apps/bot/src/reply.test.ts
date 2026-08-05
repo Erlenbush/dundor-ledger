@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
+import { inspect } from 'node:util';
 import { describe, expect, it, vi } from 'vitest';
 import { exportFights, type ExportedFight } from '@dundor/parser';
 import { buildReply, sendReply } from './reply.js';
@@ -122,5 +123,32 @@ describe('sendReply', () => {
       sendReply({ reply }, { embeds: [], allowedMentions: { repliedUser: false } }),
     ).rejects.toThrow('nope');
     expect(reply).toHaveBeenCalledTimes(1);
+  });
+
+  it('never lets the rejected payload reach the console, even via error properties', async () => {
+    // discord.js's DiscordAPIError carries an own `requestBody` property with
+    // the exact JSON that was rejected -- here, the button URL that embeds the
+    // log. A retry path that logs the raw error risks that leaking into server
+    // logs, which the log-link feature promises never to do.
+    const secretUrl = 'https://x.dev/#log=g1.super-secret-log-payload';
+    const rejection = Object.assign(new Error('Invalid Form Body'), {
+      requestBody: { json: { components: [{ components: [{ url: secretUrl }] }] } },
+    });
+    const reply = vi.fn().mockRejectedValueOnce(rejection).mockResolvedValueOnce(undefined);
+    const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await sendReply({ reply }, {
+      embeds: [],
+      components: [{ type: 1, components: [{ type: 2, style: 5, label: 'Open full breakdown', url: secretUrl }] }],
+      allowedMentions: { repliedUser: false },
+    });
+
+    // depth: null, not the console's own default-2 depth: the fix must not
+    // depend on that default staying in place (a structured logger or error
+    // tracker walks arbitrarily deep).
+    const logged = spy.mock.calls.flat().map((arg) => inspect(arg, { depth: null }));
+    expect(logged.join('\n')).not.toContain(secretUrl);
+
+    spy.mockRestore();
   });
 });
