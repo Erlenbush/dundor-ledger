@@ -4,8 +4,15 @@ Companion to `docs/superpowers/specs/2026-08-05-log-link-design.md`. Covers only
 the steps that cannot be scripted: the interactive Cloudflare login, the Discord
 probe, and the environment variable on bespin.
 
-**The code is implemented and merged.** The feature is inert until
-`LEDGER_WEB_URL` is set — these are the steps to turn it on.
+**Live as of 2026-08-05.** The web app is published at
+<https://dundor-ledger.nuclidelabs.com> and `LEDGER_WEB_URL` is set on bespin,
+so replies carry the button. What follows is the record of how it was turned
+on, and what to do if it needs redoing.
+
+`MAX_LINK_CHARS` is still the unmeasured guess of 3,000. Every fixture except
+the 44-turn Fungus log fits inside it at the production origin. The private
+test channel is serving as the probe: if buttons appear, the ceiling is at
+least ~2,950.
 
 The feature ships dark: with `LEDGER_WEB_URL` unset there is no button and the
 bot behaves exactly as it does today. Do these steps in order, and stop at any
@@ -46,6 +53,9 @@ Discord does not document a maximum length for a link button's URL, and
 - [ ] Create or pick a **private channel of your own** ⏫
 
 Not Pearguson's server. The probe posts several throwaway messages.
+
+Only needed if buttons stop appearing, or before raising `MAX_LINK_CHARS` to
+cover longer fights. Ordinary logs already fit the current budget.
 
 - [ ] Get the channel ID
 
