@@ -73,6 +73,20 @@ describe('logUrl', () => {
   it('tolerates a trailing slash on the base', () => {
     expect(logUrl('https://example.com/', 'x').url).toContain('https://example.com/#log=');
   });
+
+  it('still fits a multi-fight paste with a production-length base URL', () => {
+    // Every other test in this file uses a 13-19 character origin like
+    // https://x.dev or https://example.com. Production is roughly 41:
+    // https://dundor-ledger.example.workers.dev. two-fights-one-paste.txt is
+    // the fixture with the least headroom (2,937 of 3,000 measured with this
+    // origin in the design doc), so it is the one worth pinning here rather
+    // than trusting that a short test origin generalizes.
+    const base = 'https://dundor-ledger.example.workers.dev';
+    expect(base.length).toBeGreaterThan(40);
+    const out = logUrl(base, fixture('two-fights-one-paste.txt'));
+    expect(out.full).toBe(true);
+    expect(out.url.length).toBeLessThanOrEqual(MAX_LINK_CHARS);
+  });
 });
 
 describe('link contract', () => {
@@ -80,6 +94,7 @@ describe('link contract', () => {
     scheme: string;
     source: string;
     encoded: string;
+    fragment: string;
   };
 
   it('still decodes to the log it was generated from', () => {
@@ -90,5 +105,15 @@ describe('link contract', () => {
 
   it('uses the scheme this encoder writes', () => {
     expect(contract.scheme).toBe(SCHEME);
+  });
+
+  it('pins the URL shape, not just the codec', () => {
+    // scheme/source/encoded above pin the encoding, but not where it sits in
+    // the URL: renaming `log=` to something else would leave those three
+    // assertions passing while breaking every link already posted to Discord.
+    // logUrl's output must end with exactly the fragment the contract pins,
+    // regardless of the base URL in front of it.
+    const out = logUrl('https://x.dev', fixture(contract.source));
+    expect(out.url.endsWith(contract.fragment)).toBe(true);
   });
 });

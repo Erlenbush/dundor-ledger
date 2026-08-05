@@ -1,6 +1,6 @@
 # Opening a fight in the browser from Discord
 
-**Status:** designed, not implemented
+**Status:** implemented, ships dark behind `LEDGER_WEB_URL`
 **Date:** 2026-08-05
 
 ## The problem
@@ -133,10 +133,16 @@ prop `Ingest` already accepts.
 
 The bot encodes and the web decodes, but neither workspace depends on the
 other, so nothing would catch them drifting apart. `fixtures/link-contract.json`
-holds one encoded string generated from `snake-xl100.txt`. The bot test asserts
-its encoder still produces exactly that string; the web test asserts its decoder
-still recovers the original log from it. Either side drifting fails a test, at
-the cost of one small file rather than a shared package for two functions.
+holds `scheme`, `source`, `encoded` (one encoded string generated from
+`snake-xl100.txt`), and `fragment` (the full `#log=g1.…` string built from it).
+`encoded` alone pins the codec but not where it sits in a URL — a rename of
+`log=` to something else would leave `encoded`-only assertions passing while
+breaking every link already posted to Discord, since both sides hardcode
+`log=` independently against themselves. `fragment` pins the URL shape too:
+the bot test asserts `logUrl(...).url` ends with it, the web test asserts
+`readFragment(fragment)` reads it as data and decodes to the source fixture.
+Either side drifting fails a test, at the cost of one small file rather than a
+shared package for two functions.
 
 ## Open question
 
@@ -166,9 +172,25 @@ fights", and the multi-fight case stops being a limitation.
 
 ## Privacy
 
-Anyone holding the link holds the log. This is not new exposure: the attachment
-sits in the same channel and is equally readable by anyone who can see it.
-Recorded here as a decision rather than an oversight.
+Anyone holding the link holds the log — and this **is** new exposure, not a
+restatement of what the Discord attachment already permits.
+
+The attachment is channel-gated: reading it requires a Discord account with
+access to the channel it was posted in. The link is an ambient,
+unauthenticated, non-expiring capability: paste it anywhere — an unrelated
+server, a bug tracker, a public page — and anyone who has it reads the full
+raw log, with no Discord account and no membership check of any kind. It also
+survives in browser history, syncs across a signed-in Chrome user's devices,
+and sits in the address bar during a screenshare, none of which apply to
+opening an attachment inside Discord.
+
+The earlier version of this paragraph claimed the opposite — that this was
+"not new exposure" because the attachment is "equally readable by anyone who
+can see it" in the same channel. That equated channel membership with no
+access control at all, which is not the same thing. The decision to ship this
+tradeoff needs to be made honestly with the actual difference in view, not
+waved off as already settled. It is not re-made here; this paragraph only
+states what the tradeoff actually is.
 
 ## Out of scope
 

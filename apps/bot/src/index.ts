@@ -22,6 +22,8 @@
  *   LEDGER_PULL_COOLDOWN_SECONDS
  *                   optional, per-user cooldown on `!ledger pull`
  *                   (defaults to 30; 0 disables it)
+ *   LEDGER_WEB_URL  optional, base URL of the browser UI to link a fight to
+ *                   (unset means no link button; the feature ships dark)
  */
 import { Client, GatewayIntentBits, type Message } from 'discord.js';
 import { exportFights, type ExportedFight } from '@dundor/parser';
@@ -43,8 +45,31 @@ const pullCooldown = new Cooldown(COOLDOWN_SECONDS * 1000);
 // repeatedly should not get a complaint every time.
 const problemCooldown = new Cooldown(60_000);
 
-// Unset means no button, so the feature ships dark until the site is published.
-const WEB_URL = process.env['LEDGER_WEB_URL']?.trim() || null;
+/**
+ * Read and validate `LEDGER_WEB_URL`.
+ *
+ * Unset means no button, so the feature ships dark until the site is
+ * published. But an unvalidated non-empty string is not much better than
+ * unset: a scheme-less host (`dundor-ledger.workers.dev`) or a bare `/` is
+ * "set" by that check yet produces a URL Discord's API rejects on every
+ * single reply — a failed POST plus sendReply's retry, permanently, from a
+ * one-character config mistake. `new URL` is the cheap, thorough check.
+ */
+function readWebUrl(raw: string | undefined): string | null {
+  const trimmed = raw?.trim();
+  if (!trimmed) return null;
+  try {
+    new URL(trimmed);
+    return trimmed;
+  } catch {
+    console.error(
+      `LEDGER_WEB_URL is set but is not a valid URL (${JSON.stringify(trimmed)}). Treating it as unset — no link button will be offered.`,
+    );
+    return null;
+  }
+}
+
+const WEB_URL = readWebUrl(process.env['LEDGER_WEB_URL']);
 
 if (!TOKEN) {
   console.error('DISCORD_TOKEN is not set.');
@@ -92,7 +117,13 @@ async function analyzeAttachments(msg: Message): Promise<void> {
 
   const problems: LogProblem[] = [];
   const fights: ExportedFight[] = [];
-  const sources: Array<{ name: string; body: string }> = [];
+  // One link carries one file, so a body is only ever worth keeping when
+  // exactly one .txt was uploaded. Keeping every attachment's body in an
+  // array until the reply is sent, as this used to, holds up to
+  // MAX_ATTACHMENT_BYTES per attachment simultaneously instead of one body
+  // being GC-eligible per loop iteration -- worst case ~20 MB on a single
+  // message, which matters on a 961 MB droplet.
+  let sourceBody: string | null = null;
 
   for (const att of candidates) {
     if (att.size >= MAX_ATTACHMENT_BYTES) {
@@ -108,7 +139,7 @@ async function analyzeAttachments(msg: Message): Promise<void> {
     }
 
     const body = await res.text();
-    sources.push({ name: att.name, body });
+    if (candidates.length === 1) sourceBody = body;
     let parsedHere = 0;
     for (const entry of exportFights(body, att.name)) {
       if ('error' in entry) console.error(`${att.name}: ${entry.error}`);
@@ -127,9 +158,11 @@ async function analyzeAttachments(msg: Message): Promise<void> {
     return;
   }
 
-  // One link carries one file, so only offer it when a single file parsed.
-  const logText = sources.length === 1 ? sources[0]!.body : null;
-  await sendReply(msg, buildReply({ fights, problems, logText, webUrl: WEB_URL }));
+  // One link carries one file, so only offer it when a single file was
+  // uploaded. This tests how many were attached, not how many downloaded or
+  // parsed: if two were attached and one failed, there is still no single
+  // file to point a link at.
+  await sendReply(msg, buildReply({ fights, problems, logText: sourceBody, webUrl: WEB_URL }));
 }
 
 client.on('messageCreate', async (msg) => {

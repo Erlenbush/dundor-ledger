@@ -10,6 +10,7 @@ const contract = JSON.parse(fixture('link-contract.json')) as {
   scheme: string;
   source: string;
   encoded: string;
+  fragment: string;
 };
 
 describe('readFragment', () => {
@@ -30,6 +31,25 @@ describe('readFragment', () => {
   it('flags a scheme it does not understand rather than guessing', () => {
     expect(readFragment('#log=g9.AAAA')).toEqual({ kind: 'unknown-scheme' });
   });
+
+  it('reads the exact fragment shape the bot produces, pinned by the contract', () => {
+    // The bot side pins the same contract.fragment against logUrl's output.
+    // If either side changes the URL shape (not just the codec), one of the
+    // two tests fails.
+    const out = readFragment(contract.fragment);
+    expect(out.kind).toBe('data');
+    if (out.kind !== 'data') throw new Error('expected data');
+    expect(out.encoded).toBe(contract.encoded.slice(contract.scheme.length + 1));
+  });
+
+  it('treats a link truncated right at the dot as our scheme with an empty payload, not as no link at all', () => {
+    // `#log=g1.` with nothing after the final dot used to fail the regex
+    // entirely and come back as `{ kind: 'none' }`, which App.tsx treats as
+    // "no link on this page load" -- so a truncated link silently rendered
+    // the sample fight instead of reporting damage. It must route to the
+    // 'data' path (and therefore into decodeLog, which rejects it) instead.
+    expect(readFragment('#log=g1.')).toEqual({ kind: 'data', encoded: '' });
+  });
 });
 
 describe('decodeLog', () => {
@@ -41,6 +61,13 @@ describe('decodeLog', () => {
     expect(await decodeLog(frag.encoded)).toBe(fixture(contract.source));
   });
 
+  it('reads the full pinned fragment end to end, URL shape included', async () => {
+    const frag = readFragment(contract.fragment);
+    expect(frag.kind).toBe('data');
+    if (frag.kind !== 'data') throw new Error('expected data');
+    expect(await decodeLog(frag.encoded)).toBe(fixture(contract.source));
+  });
+
   it('rejects a truncated payload rather than returning nonsense', async () => {
     const frag = readFragment(`#log=${contract.encoded.slice(0, 200)}`);
     if (frag.kind !== 'data') throw new Error('expected data');
@@ -49,6 +76,12 @@ describe('decodeLog', () => {
 
   it('rejects data that is not gzip at all', async () => {
     await expect(decodeLog('bm90IGd6aXA')).rejects.toThrow();
+  });
+
+  it('rejects an empty payload rather than resolving to empty text', async () => {
+    // The other half of the truncated-fragment fix: readFragment now hands
+    // decodeLog an empty string for `#log=g1.` instead of never calling it.
+    await expect(decodeLog('')).rejects.toThrow();
   });
 });
 

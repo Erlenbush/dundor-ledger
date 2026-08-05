@@ -4,8 +4,8 @@ Companion to `docs/superpowers/specs/2026-08-05-log-link-design.md`. Covers only
 the steps that cannot be scripted: the interactive Cloudflare login, the Discord
 probe, and the environment variable on bespin.
 
-**These steps apply once the feature is implemented.** The spec is designed but
-not built. Nothing here works yet.
+**The code is implemented and merged.** The feature is inert until
+`LEDGER_WEB_URL` is set — these are the steps to turn it on.
 
 The feature ships dark: with `LEDGER_WEB_URL` unset there is no button and the
 bot behaves exactly as it does today. Do these steps in order, and stop at any
@@ -71,6 +71,12 @@ accepted.
 Leave headroom rather than sitting exactly on the limit. If the constant is
 wrong the bot retries without the button, so a fight loses its link but the
 analysis still posts. That backstop is not a reason to skip the margin.
+
+Raising `MAX_LINK_CHARS` above roughly 4,690 is expected to fail
+`apps/bot/src/reply.test.ts` — one of its tests pins the Fungus fixture as an
+example of a fight that does *not* fit, and says so in its own comment. That
+failure is the correct signal to update the test's expectation, not a sign
+the new constant is wrong.
 
 - [ ] Run the tests and deploy
 
@@ -142,10 +148,24 @@ nothing else changes.
   in an access log. This is why the approach does not contradict what was told
   to the Dundor developer about logs not being persisted.
 
-- Anyone holding a link holds that log. This is not new exposure, since the
-  attachment is in the same channel, but it is worth knowing before sharing
-  links outside the server.
+- **This is new exposure, not equivalent to the Discord attachment.** The
+  attachment is channel-gated: reading it requires a Discord account with
+  access to that channel. The link is an ambient, unauthenticated,
+  non-expiring capability — anyone who has it can read the full raw log from
+  anywhere, with no Discord account and no membership check. Pasting a link
+  into an unrelated chat, a bug report, or a public page hands over the whole
+  log to whoever reads that. See the spec's Privacy section for the decision
+  this rests on, which needs re-making, not assumed, before the feature is
+  enabled.
 
-- The links do not expire. They are self-contained and keep working as long as
-  the site is published, unlike Discord attachment URLs which are signed and
-  lapse after about a day.
+- The links do not expire — they are self-contained and keep working as long
+  as the site is published. This is not the safety property it sounds like: a
+  Discord attachment's *signed URL* lapses after about a day, but the
+  attachment's underlying data does not expire either, so this is not a
+  meaningful difference from what Discord already does. Framing it as a
+  benefit of the link is misleading in the direction that makes the feature
+  look safer than it is.
+
+- The fragment also lands in browser history, gets synced across devices by a
+  signed-in Chrome user, and sits fully visible in the address bar during a
+  screenshare — none of which apply to opening the attachment in Discord.

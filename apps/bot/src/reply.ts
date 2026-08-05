@@ -1,3 +1,4 @@
+import { DiscordAPIError } from 'discord.js';
 import type { ExportedFight } from '@dundor/parser';
 import { formatFight } from './format.js';
 import { logUrl } from './link.js';
@@ -39,14 +40,23 @@ export function buildReply({ fights, problems, logText, webUrl }: ReplyOptions):
 
   const notes: string[] = [];
   if (!detailed) {
-    const tail = link?.full
-      ? `The button opens all ${fights.length}.`
-      : 'Upload one on its own for the full breakdown.';
-    notes.push(
-      skipped > 0
-        ? `Showing ${shown.length} of ${fights.length} fights. ${tail}`
-        : `${fights.length} fights. ${tail}`,
-    );
+    const summary = skipped > 0
+      ? `Showing ${shown.length} of ${fights.length} fights.`
+      : `${fights.length} fights.`;
+    // Say "the site", never "the button": sendReply can drop the button on a
+    // rejected payload after this content is already built, and a link that
+    // is over budget points at the bare site with no fight attached either
+    // way. Either way "the site" stays true; "the button" would not.
+    //
+    // When a link exists but is over budget (`link && !link.full`), skip this
+    // note entirely rather than say anything here: the over-budget note below
+    // already covers it, and "upload one on its own" would be nonsense advice
+    // when a single upload is exactly what produced this multi-fight reply.
+    if (link?.full) {
+      notes.push(`${summary} Open the site to see all ${fights.length}.`);
+    } else if (!link) {
+      notes.push(`${summary} Upload one on its own for the full breakdown.`);
+    }
   }
   if (link && !link.full) {
     notes.push('This fight was too long to link directly. Open the site and drop the .txt on it.');
@@ -73,7 +83,17 @@ export function buildReply({ fights, problems, logText, webUrl }: ReplyOptions):
           components: [
             {
               type: 1,
-              components: [{ type: 2, style: 5, label: 'Open full breakdown', url: link.url }],
+              components: [
+                {
+                  type: 2,
+                  style: 5,
+                  // Only true when the fight actually rides in the URL. On
+                  // the over-budget fallback `link.url` is the bare site with
+                  // nothing attached, and "Open full breakdown" would lie.
+                  label: link.full ? 'Open full breakdown' : 'Open the analyzer',
+                  url: link.url,
+                },
+              ],
             },
           ],
         }
@@ -83,10 +103,19 @@ export function buildReply({ fights, problems, logText, webUrl }: ReplyOptions):
 }
 
 /**
- * Post the draft, dropping components and retrying once if Discord refuses it.
+ * Post the draft, dropping components and retrying once if Discord rejects
+ * the payload itself.
  *
  * Discord does not document a maximum length for a link button URL, so a badly
- * chosen budget must cost the button rather than the whole reply.
+ * chosen budget must cost the button rather than the whole reply — but only
+ * when the button is actually what Discord objected to. `reply()` can also
+ * reject with a 403 (missing permission), a 5xx, or a network error after
+ * Discord already created the message and the response was merely lost. None
+ * of those are fixed by resending without the button: a permissions retry is
+ * futile, and if the message already exists, `reply()` again is not
+ * idempotent and double-posts. Only an HTTP 400 ("Invalid Form Body", the
+ * shape Discord uses to reject a malformed or oversized component) means the
+ * payload itself was the problem, so only that status triggers the retry.
  */
 export async function sendReply(
   // Method shorthand (not a property typed as an arrow function) so this
@@ -100,14 +129,15 @@ export async function sendReply(
     await target.reply(draft);
   } catch (err) {
     if (!draft.components) throw err;
+    if (!(err instanceof DiscordAPIError) || err.status !== 400) throw err;
     // Message only, never the raw error: discord.js's DiscordAPIError carries
     // an own `requestBody` property with the rejected payload, which for this
     // call is the button that embeds the log. Logging the error object would
     // put log content in server logs, which is exactly what we promise never
     // to do — do not "fix" this back to the full object.
     console.error(
-      'reply with components was rejected, retrying without:',
-      err instanceof Error ? err.message : String(err),
+      'reply with components was rejected (400 Invalid Form Body), retrying without:',
+      err.message,
     );
     const { components: _dropped, ...rest } = draft;
     await target.reply(rest);

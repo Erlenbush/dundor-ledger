@@ -14,7 +14,12 @@ export type Fragment =
   | { kind: 'data'; encoded: string };
 
 export function readFragment(hash: string): Fragment {
-  const match = /^#?log=([^.]+)\.(.+)$/.exec(hash);
+  // The payload group is `(.*)`, not `(.+)`: a link truncated right at the
+  // dot (`#log=g1.`) must still read as our scheme with an empty payload, so
+  // it falls through to decodeLog and reports as damaged. With `(.+)` it fails
+  // to match at all, comes back as `{ kind: 'none' }`, and the caller silently
+  // shows the sample fight instead of telling the reader their link is broken.
+  const match = /^#?log=([^.]+)\.(.*)$/.exec(hash);
   if (!match) return { kind: 'none' };
   if (match[1] !== SCHEME) return { kind: 'unknown-scheme' };
   return { kind: 'data', encoded: match[2]! };
