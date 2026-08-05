@@ -57,6 +57,10 @@ systemctl restart dundor-bot
 The startup log line names the ID it is watching, so `journalctl -u dundor-bot
 -n 1` confirms it took.
 
+`LEDGER_WEB_URL` in the same file controls the "Open full breakdown" button.
+Unset means no button. Setting it up for the first time is covered in
+`docs/manual/log-link-manual.md`.
+
 The development bot does not need a second service on this droplet. It can run
 on devbuntu against its own token, which keeps the 961 MB box serving one
 process:

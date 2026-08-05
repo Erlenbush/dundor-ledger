@@ -42,6 +42,13 @@ relay pointed at Dundor. The window runs from the last accepted pull, so
 hammering the command cannot extend your own lockout, and only the first
 blocked attempt gets a reply. Set it to 0 to disable the limit.
 
+`LEDGER_WEB_URL` is the base URL of the web UI, for example
+`https://dundor-ledger.example.workers.dev`. When it is set, replies carry an
+"Open full breakdown" button that opens the same fight in the browser, with the
+log gzipped into the URL fragment. Fragments are never sent to a server, so the
+log reaches neither the host nor its logs. When the variable is unset there is
+no button. Logs too large to fit link to the bare site instead.
+
 For a long-running deployment, `dundor-bot.service` is an example systemd unit
 and `.env.example` shows the environment file. The bot needs Node 20 or newer.
 
