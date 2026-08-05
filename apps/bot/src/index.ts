@@ -25,13 +25,12 @@
  */
 import { Client, GatewayIntentBits, type Message } from 'discord.js';
 import { exportFights, type ExportedFight } from '@dundor/parser';
-import { formatFight } from './format.js';
 import { Cooldown } from './cooldown.js';
 import { MAX_ATTACHMENT_BYTES, problemReport, type LogProblem } from './problems.js';
+import { buildReply, sendReply } from './reply.js';
 
 const TOKEN = process.env['DISCORD_TOKEN'];
 const DUNDOR_ID = process.env['DUNDOR_APP_ID'] ?? '1284876985822216232';
-const MAX_EMBEDS = 3;
 
 // `pull` relays into Dundor's command handler, so it is rate limited per user.
 // Anything unparseable falls back to the default rather than disabling the limit.
@@ -43,6 +42,9 @@ const pullCooldown = new Cooldown(COOLDOWN_SECONDS * 1000);
 // Failure notices are rate limited too. Someone pasting the same bad file
 // repeatedly should not get a complaint every time.
 const problemCooldown = new Cooldown(60_000);
+
+// Unset means no button, so the feature ships dark until the site is published.
+const WEB_URL = process.env['LEDGER_WEB_URL']?.trim() || null;
 
 if (!TOKEN) {
   console.error('DISCORD_TOKEN is not set.');
@@ -90,6 +92,7 @@ async function analyzeAttachments(msg: Message): Promise<void> {
 
   const problems: LogProblem[] = [];
   const fights: ExportedFight[] = [];
+  const sources: Array<{ name: string; body: string }> = [];
 
   for (const att of candidates) {
     if (att.size >= MAX_ATTACHMENT_BYTES) {
@@ -105,6 +108,7 @@ async function analyzeAttachments(msg: Message): Promise<void> {
     }
 
     const body = await res.text();
+    sources.push({ name: att.name, body });
     let parsedHere = 0;
     for (const entry of exportFights(body, att.name)) {
       if ('error' in entry) console.error(`${att.name}: ${entry.error}`);
@@ -123,33 +127,9 @@ async function analyzeAttachments(msg: Message): Promise<void> {
     return;
   }
 
-  const shown = fights.slice(0, MAX_EMBEDS);
-  const skipped = fights.length - shown.length;
-  // A single fight gets every insight in full. Several in one reply would be a
-  // wall of text, so those fall back to headlines and say how to get the rest.
-  const detailed = fights.length === 1;
-  const fightNote = detailed
-    ? null
-    : skipped > 0
-      ? `Showing ${shown.length} of ${fights.length} fights. Upload one on its own for the full breakdown.`
-      : `${fights.length} fights. Upload one on its own for the full breakdown.`;
-  // Part of the upload may still have failed even though we have something to
-  // show, so mention it alongside the embeds rather than dropping it.
-  const note = [fightNote, problemReport(problems, true)].filter(Boolean).join('\n\n') || null;
-  await msg.reply({
-    embeds: shown.map((f) => {
-      const e = formatFight(f, detailed);
-      return {
-        title: e.title,
-        description: e.description,
-        color: e.color,
-        fields: e.fields,
-        footer: { text: e.footer },
-      };
-    }),
-    ...(note ? { content: note } : {}),
-    allowedMentions: { repliedUser: false },
-  });
+  // One link carries one file, so only offer it when a single file parsed.
+  const logText = sources.length === 1 ? sources[0]!.body : null;
+  await sendReply(msg, buildReply({ fights, problems, logText, webUrl: WEB_URL }));
 }
 
 client.on('messageCreate', async (msg) => {
