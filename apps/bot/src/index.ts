@@ -27,6 +27,7 @@ import { Client, GatewayIntentBits, type Message } from 'discord.js';
 import { exportFights, type ExportedFight } from '@dundor/parser';
 import { formatFight } from './format.js';
 import { Cooldown } from './cooldown.js';
+import { MAX_ATTACHMENT_BYTES, problemReport, type LogProblem } from './problems.js';
 
 const TOKEN = process.env['DISCORD_TOKEN'];
 const DUNDOR_ID = process.env['DUNDOR_APP_ID'] ?? '1284876985822216232';
@@ -38,6 +39,10 @@ const COOLDOWN_RAW = Number(process.env['LEDGER_PULL_COOLDOWN_SECONDS']);
 const COOLDOWN_SECONDS =
   Number.isFinite(COOLDOWN_RAW) && COOLDOWN_RAW >= 0 ? COOLDOWN_RAW : 30;
 const pullCooldown = new Cooldown(COOLDOWN_SECONDS * 1000);
+
+// Failure notices are rate limited too. Someone pasting the same bad file
+// repeatedly should not get a complaint every time.
+const problemCooldown = new Cooldown(60_000);
 
 if (!TOKEN) {
   console.error('DISCORD_TOKEN is not set.');
@@ -54,37 +59,83 @@ const client = new Client({
   ],
 });
 
-async function analyzeAttachments(msg: Message): Promise<void> {
-  const texts = [...msg.attachments.values()].filter(
-    (att) => att.name.toLowerCase().endsWith('.txt') && att.size < 2_000_000,
-  );
-  if (!texts.length) return;
+/** True when a message is one we owe an answer to, successful or not. */
+function hasLogAttachment(msg: Message): boolean {
+  return [...msg.attachments.values()].some((att) => att.name.toLowerCase().endsWith('.txt'));
+}
 
+/**
+ * Tell someone their upload failed, at most once per window.
+ *
+ * Never throws: this runs on the failure path, and a bot that cannot report a
+ * problem must not turn that into a second problem.
+ */
+async function reportProblem(msg: Message, text: string): Promise<void> {
+  try {
+    if (!problemCooldown.check(msg.author.id, Date.now()).allowed) return;
+    await msg.reply({ content: text, allowedMentions: { repliedUser: false } });
+  } catch (err) {
+    console.error('could not report a problem:', err);
+  }
+}
+
+async function analyzeAttachments(msg: Message): Promise<void> {
+  // Anything that is not a .txt stays silent on purpose. People post
+  // screenshots and unrelated files constantly, and a bot that answers every
+  // one of them is a nuisance.
+  const candidates = [...msg.attachments.values()].filter((att) =>
+    att.name.toLowerCase().endsWith('.txt'),
+  );
+  if (!candidates.length) return;
+
+  const problems: LogProblem[] = [];
   const fights: ExportedFight[] = [];
-  for (const att of texts) {
+
+  for (const att of candidates) {
+    if (att.size >= MAX_ATTACHMENT_BYTES) {
+      problems.push({ kind: 'oversized', name: att.name, size: att.size });
+      continue;
+    }
+
     const res = await fetch(att.url);
     if (!res.ok) {
       console.error(`failed to download ${att.name}: ${res.status}`);
+      problems.push({ kind: 'download', name: att.name, status: res.status });
       continue;
     }
+
     const body = await res.text();
+    let parsedHere = 0;
     for (const entry of exportFights(body, att.name)) {
       if ('error' in entry) console.error(`${att.name}: ${entry.error}`);
-      else fights.push(entry);
+      else {
+        fights.push(entry);
+        parsedHere++;
+      }
     }
+    // Every chunk failed, so the file was a .txt but not a battle log.
+    if (parsedHere === 0) problems.push({ kind: 'unparsed', name: att.name });
   }
-  if (!fights.length) return;
+
+  if (!fights.length) {
+    const report = problemReport(problems, false);
+    if (report) await reportProblem(msg, report);
+    return;
+  }
 
   const shown = fights.slice(0, MAX_EMBEDS);
   const skipped = fights.length - shown.length;
   // A single fight gets every insight in full. Several in one reply would be a
   // wall of text, so those fall back to headlines and say how to get the rest.
   const detailed = fights.length === 1;
-  const note = detailed
+  const fightNote = detailed
     ? null
     : skipped > 0
       ? `Showing ${shown.length} of ${fights.length} fights. Upload one on its own for the full breakdown.`
       : `${fights.length} fights. Upload one on its own for the full breakdown.`;
+  // Part of the upload may still have failed even though we have something to
+  // show, so mention it alongside the embeds rather than dropping it.
+  const note = [fightNote, problemReport(problems, true)].filter(Boolean).join('\n\n') || null;
   await msg.reply({
     embeds: shown.map((f) => {
       const e = formatFight(f, detailed);
@@ -133,6 +184,11 @@ client.on('messageCreate', async (msg) => {
     }
   } catch (err) {
     console.error('handler failed:', err);
+    // Only answer if they were owed one. An unrelated message that happened to
+    // throw should not get a reply out of nowhere.
+    if (hasLogAttachment(msg)) {
+      await reportProblem(msg, 'Something went wrong on my end reading that log. Try again.');
+    }
   }
 });
 
