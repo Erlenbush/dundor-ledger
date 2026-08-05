@@ -2,16 +2,16 @@
 
 Everything that can be scripted lives in `deploy/deploy-bot.sh`. This document
 covers only the steps a script cannot do: the Discord developer portal clicks,
-the secret, and the systemd unit (bespin has a guard that blocks agent writes to
-`/etc/systemd/system`, so that step is yours by design).
+the secret, the systemd unit (bespin has a guard that blocks agent writes to
+`/etc/systemd/system`, so that step is yours by design), and anything that
+depends on the Dundor developer.
 
 Host: `bespin` (159.223.198.240, root via `~/.ssh/id_ed25519_bespin`).
 Deployed to: `/home/dundor/dundor-ledger`, running as the `dundor` system user.
 Application ID: `1534422776914382859` (public identifier, not a secret).
 
-**Status: live since 2026-08-05 06:24 UTC.** The bot is logged in as
-`Dundor Ledger#5231` and running under systemd with 0 restarts. What remains is
-getting it into the server, which depends on the Dundor developer.
+**Status: live since 2026-08-05 06:24 UTC**, logged in as `Dundor Ledger#5231`
+and running under systemd. Currently pointed at **Staging Dundor**.
 
 ## Done
 
@@ -23,47 +23,113 @@ getting it into the server, which depends on the Dundor developer.
 - [x] Put the bot token in `apps/bot/.env`, mode 0600, owned by `dundor`
 - [x] Install the systemd unit and `systemctl enable --now dundor-bot`
 - [x] Confirm a clean gateway login and a stable service (`NRestarts=0`, no journal warnings)
+- [x] Rate limit `!ledger pull` per user, so the bot cannot be used as a spam relay
+- [x] Confirm Dundor's production application ID with the developer
+- [x] Point the deployment at Staging Dundor
+
+## Which Dundor the bot watches
+
+`DUNDOR_APP_ID` in `apps/bot/.env` decides which application counts as Dundor.
+Change it and `systemctl restart dundor-bot`.
+
+| Environment | Application ID |
+| --- | --- |
+| Staging Dundor (current) | `1344251040970571818` |
+| Production Dundor | `1284876985822216232` |
+
+Running staging and production at the same time would need a **second Discord
+application** with its own token. Two processes sharing one token in one server
+answer every log twice.
+
+To read those IDs off Discord yourself: enable Developer Mode in Discord
+settings, then right click the bot and Copy User ID.
 
 ## Remaining steps
 
 ### 4. Get the bot invited to the server
 
-The bot is running but is not in any server yet. Inviting it requires the
-Dundor developer, since it is their server.
-
-- [ ] Send the developer this invite URL ⏫
+- [ ] Confirm the bot is actually in the server, and in the channels where Dundor posts
 
 ```
 https://discord.com/oauth2/authorize?client_id=1534422776914382859&scope=bot&permissions=84992
 ```
 
 `84992` = View Channels (1024) + Send Messages (2048) + Embed Links (16384) +
-Read Message History (65536).
+Read Message History (65536). If the server uses per channel overrides, check
+the grant survives in the channels that matter.
 
-- [ ] Ask them to confirm the grant survives in the channels where Dundor posts, if the server uses per-channel permission overrides
-- [ ] Ask them to confirm Dundor's application ID ⏫
+### 5. Switch `!ledger pull` over to Dundor's HTTP API
 
-  The bot only auto-analyzes attachments from the app matching `DUNDOR_APP_ID`,
-  which defaults to `1284876985822216232`. If that ID is wrong for their current
-  deployment, the bot sits in the channel doing nothing, with no error. If they
-  give a different ID, uncomment and set `DUNDOR_APP_ID` in `apps/bot/.env` and
-  run `systemctl restart dundor-bot`.
+This replaces the original design, which is dead. See "Why the whitelist
+approach was abandoned" below.
 
-- [ ] Ask them to whitelist this bot as a command source, for `!ledger pull`
+**Agreed with the Dundor developer:**
 
-  Bots cannot invoke other bots' commands and Dundor normally ignores bot
-  messages, so `!ledger pull` only closes the loop with that whitelist. Without
-  it the feature is inert — auto-analysis still works, but a human has to type
-  `dun logs get n`. Worth asking while you have their attention; otherwise it
-  costs a second round-trip.
+- Dundor already exposes HTTP endpoints (nold and event shop stocks), so adding one for logs is cheap on their side
+- The API returns exactly two things: a list of all logs as seen in `dun logs`, and one log `.txt` file from `dun logs` as requested, in the same format
+- Same format is the critical part. `@dundor/parser` and every fixture already consume that text, so no second parser is needed
+- Only the owner may read their own logs. Letting people read other users' logs was offered and declined, since there is no use case for it
+- Access is opt in per user, via a `dun settings` toggle along the lines of "Allow 3rd party Dundor Ledger to read your logs via the API"
 
-### 5. Smoke test in Discord
+**Still waiting on the developer:**
+
+- [ ] A 403 with a reason field, so "hasn't opted in" is distinguishable from "no logs" and "unknown user" ⏫
+
+  Without it, a user who has not flipped the toggle sees "no logs found",
+  assumes the bot is broken, and reports it to the Dundor developer rather than
+  discovering the setting.
+
+- [ ] How to authenticate (API key in a header is fine)
+- [ ] Base URLs, and whether staging and production are separate hosts
+- [ ] What each entry in the log list looks like, and what identifier gets passed back to fetch a specific one ⏫
+
+  This one blocks the command's design. `!ledger pull 3` currently means "the
+  third most recent", and whether that maps to an index or an opaque ID changes
+  how it is written.
+
+- [ ] Any rate limit they want respected (we are already capped at one pull per user per 30 seconds)
+- [ ] Explicit agreement on the trust model ⏫
+
+  The bot calls the API with the Discord ID of whoever ran the command, so
+  Dundor is trusting this bot to send the right one. "Owner views own logs"
+  sounds airtight until you notice which side asserts who the owner is. The opt
+  in toggle is what makes it safe, not anything on our end. Better agreed now
+  than discovered later.
+
+**Our side, once those land:**
+
+- Two new environment variables for the API base URL and key
+- `!ledger pull` calls the API instead of posting `dun logs get` into the channel
+- A 403 branch that tells the user to run `dun settings` and enable API access
+- The per-user cooldown stays. It now protects Dundor's API rather than its command handler, which is arguably where it mattered more
+- Auto-analysis of `.txt` attachments is unchanged and keeps working regardless
+- **Logs must not be persisted.** They are parsed in memory and posted back as an embed, nothing is written to disk. This was stated to the developer as a reason the access is low risk, and it needs to stay true. Adding any caching means going back and saying so.
+
+### 6. Smoke test in Discord
 
 - [ ] Upload a saved Dundor `.txt` battle log to a channel the bot can see
 - [ ] Confirm it replies with a summary embed
 
 Use a fixture from the repo if you don't have a fresh log handy, e.g.
 `fixtures/fungus-creature-loss-xl63.txt`.
+
+## Why the whitelist approach was abandoned
+
+The original `!ledger pull` posted the literal text `dun logs get n` into the
+channel, hoping Dundor would treat it as a command. That needed the Dundor
+developer to whitelist this bot as a command source.
+
+Two things came out of asking:
+
+1. Bot to bot was never the blocker. The developer already lets Eric's Dundor Helper use some commands, so it was clearly possible.
+2. The actual blocker was attribution. `dun logs` resolves against whoever sent the message, and it will not look up other users. So a whitelist would have made Dundor return *this bot's* logs, which are empty. The feature would have been granted and still been useless.
+
+An HTTP endpoint that takes a user ID solves the attribution problem directly,
+so the whitelist is not needed and should not be asked for.
+
+Worth remembering as a pattern: the question that killed this design ("does the
+command resolve against the sender?") was cheaper to ask than the permission
+would have been to grant.
 
 ## Redeploying later
 
@@ -88,15 +154,16 @@ systemctl show dundor-bot -p NRestarts --value   # climbing = crash loop
 failing loudly, so check `NRestarts` rather than trusting `active (running)`
 right after a start.
 
-- `Unauthorized` / `TOKEN_INVALID` → wrong or rotated token
-- `Used disallowed intents` → Message Content Intent got switched off
-- `Missing Permissions` → the invite lacked Embed Links; see below
+- `Unauthorized` / `TOKEN_INVALID` means a wrong or rotated token
+- `Used disallowed intents` means the Message Content Intent got switched off
+- `Missing Permissions` means the invite lacked Embed Links
+- Bot sits silently and never reacts: usually `DUNDOR_APP_ID` pointing at the wrong Dundor. The startup log line names the ID it is watching.
 
 ## Two gotchas that cost us time
 
 **The public key is not the token.** The portal's General Information page
-shows a 64-character lowercase-hex Public Key. The bot token is on the **Bot**
-page and looks completely different: ~72 characters in three dot-separated
+shows a 64 character lowercase hex Public Key. The bot token is on the **Bot**
+page and looks completely different: about 72 characters in three dot separated
 parts, mixed case, with `_` and `-`. A gateway bot never uses the public key at
 all. Pasting the wrong one yields a crash loop with a bare `Unauthorized`,
 which gives no hint that the wrong *kind* of credential is in the file. To
@@ -127,12 +194,15 @@ going back to the other developer for a re-invite.
   sudo -u dundor -E /usr/bin/node apps/bot/dist/index.js
   ```
 
+- `apps/bot/.env.example` is covered by the global `protect-files` hook, so
+  agents cannot edit it. New settings have to be added there by hand. It is
+  currently missing `LEDGER_PULL_COOLDOWN_SECONDS`.
+
 - bespin also runs `nginx`, `ge-api`, and `ge-detector` (the OSRS GE tracker,
-  Python under `/opt/ge-tracker`). The bot shares nothing with them — it is a
-  Node process with no ports and no inbound traffic — but the box only has
-  961 MB of RAM, which is why the deploy script builds locally and ships
-  `dist/` rather than compiling on the droplet. The bot's resident set is
-  about 108 MB.
+  Python under `/opt/ge-tracker`). The bot shares nothing with them. It is a
+  Node process with no ports and no inbound traffic. The box only has 961 MB of
+  RAM, which is why the deploy script builds locally and ships `dist/` rather
+  than compiling on the droplet. The bot's resident set is about 108 MB.
 
 - The web app is unrelated to this host. It deploys to Cloudflare Workers via
   `npm run deploy` from the repo root.
