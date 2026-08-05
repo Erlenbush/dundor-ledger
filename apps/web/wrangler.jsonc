@@ -12,6 +12,15 @@
     "not_found_handling": "single-page-application"
   },
 
+  // Served from nuclidelabs.com rather than the account's workers.dev
+  // subdomain. Wrangler creates the DNS record and certificate on deploy,
+  // since the zone is on the same Cloudflare account.
+  "routes": [
+    { "pattern": "dundor-ledger.nuclidelabs.com", "custom_domain": true }
+  ],
+
+  // Safe here only because the log lives in the URL fragment, which browsers
+  // never transmit — request logs cannot contain it.
   "observability": {
     "enabled": true
   }
