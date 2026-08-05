@@ -19,14 +19,25 @@
  *   DISCORD_TOKEN   required, the bot token
  *   DUNDOR_APP_ID   optional, Dundor's application id
  *                   (defaults to the public id 1284876985822216232)
+ *   LEDGER_PULL_COOLDOWN_SECONDS
+ *                   optional, per-user cooldown on `!ledger pull`
+ *                   (defaults to 30; 0 disables it)
  */
 import { Client, GatewayIntentBits, type Message } from 'discord.js';
 import { exportFights, type ExportedFight } from '@dundor/parser';
 import { formatFight } from './format.js';
+import { Cooldown } from './cooldown.js';
 
 const TOKEN = process.env['DISCORD_TOKEN'];
 const DUNDOR_ID = process.env['DUNDOR_APP_ID'] ?? '1284876985822216232';
 const MAX_EMBEDS = 3;
+
+// `pull` relays into Dundor's command handler, so it is rate limited per user.
+// Anything unparseable falls back to the default rather than disabling the limit.
+const COOLDOWN_RAW = Number(process.env['LEDGER_PULL_COOLDOWN_SECONDS']);
+const COOLDOWN_SECONDS =
+  Number.isFinite(COOLDOWN_RAW) && COOLDOWN_RAW >= 0 ? COOLDOWN_RAW : 30;
+const pullCooldown = new Cooldown(COOLDOWN_SECONDS * 1000);
 
 if (!TOKEN) {
   console.error('DISCORD_TOKEN is not set.');
@@ -98,6 +109,16 @@ client.on('messageCreate', async (msg) => {
     if (!msg.author.bot) {
       const m = msg.content.trim().match(/^!ledger\s+pull(?:\s+(\d+))?$/i);
       if (m) {
+        const gate = pullCooldown.check(msg.author.id, Date.now());
+        if (!gate.allowed) {
+          // Only the first blocked attempt gets an answer; replying to every
+          // one would turn one person's spam into two people's spam.
+          if (gate.notify) {
+            const secs = Math.ceil(gate.retryAfterMs / 1000);
+            await msg.reply(`Hold on ${secs}s before pulling again.`);
+          }
+          return;
+        }
         await msg.channel.send(`dun logs get ${m[1] ?? '1'}`);
         return;
       }

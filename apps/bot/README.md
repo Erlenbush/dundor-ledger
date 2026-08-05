@@ -35,6 +35,13 @@ DISCORD_TOKEN=... npm run start -w @dundor/bot
 `DUNDOR_APP_ID` overrides which application counts as Dundor; it defaults to
 the public id 1284876985822216232.
 
+`LEDGER_PULL_COOLDOWN_SECONDS` sets the per-user cooldown on `!ledger pull`,
+defaulting to 30. `pull` is the one command that speaks into another bot's
+command handler, so it is rate limited to keep this bot from becoming a spam
+relay pointed at Dundor. The window runs from the last accepted pull, so
+hammering the command cannot extend your own lockout, and only the first
+blocked attempt gets a reply. Set it to 0 to disable the limit.
+
 For a long-running deployment, `dundor-bot.service` is an example systemd unit
 and `.env.example` shows the environment file. The bot needs Node 20 or newer.
 
