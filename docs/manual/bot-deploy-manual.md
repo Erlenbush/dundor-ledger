@@ -7,80 +7,57 @@ the secret, and the systemd unit (bespin has a guard that blocks agent writes to
 
 Host: `bespin` (159.223.198.240, root via `~/.ssh/id_ed25519_bespin`).
 Deployed to: `/home/dundor/dundor-ledger`, running as the `dundor` system user.
+Application ID: `1534422776914382859` (public identifier, not a secret).
 
-## Already done
+**Status: live since 2026-08-05 06:24 UTC.** The bot is logged in as
+`Dundor Ledger#5231` and running under systemd with 0 restarts. What remains is
+getting it into the server, which depends on the Dundor developer.
 
-These are complete on bespin as of 2026-08-05 — listed so you know what not to redo.
+## Done
 
 - [x] Install Node 22 from NodeSource (apt on Ubuntu 24.04 only offers Node 18; the bot needs 20+)
 - [x] Create the `dundor` system user with home `/home/dundor`
 - [x] Ship the repo to `/home/dundor/dundor-ledger` with prebuilt `dist/`
 - [x] `npm ci --omit=dev` for production dependencies
-- [x] Stage `apps/bot/.env` from the template, mode 0600, owned by `dundor`
-- [x] Verify the built bot runs (dry run against a fixture succeeds; `index.js` exits cleanly with `DISCORD_TOKEN is not set.`)
+- [x] Enable the Message Content Intent in the developer portal
+- [x] Put the bot token in `apps/bot/.env`, mode 0600, owned by `dundor`
+- [x] Install the systemd unit and `systemctl enable --now dundor-bot`
+- [x] Confirm a clean gateway login and a stable service (`NRestarts=0`, no journal warnings)
 
 ## Remaining steps
 
-### 1. Get the bot token from the Discord developer portal
+### 4. Get the bot invited to the server
 
-- [ ] Go to <https://discord.com/developers/applications> and open (or create) the Dundor Ledger application
-- [ ] Open the **Bot** page and enable the **Message Content Intent** ⏫ — without it the bot receives empty message bodies and can never see the log attachments
-- [ ] Click **Reset Token**, then copy the token. It is shown exactly once
-- [ ] Invite the bot with scope `bot` and permissions **View Channels**, **Send Messages**, **Read Message History**
+The bot is running but is not in any server yet. Inviting it requires the
+Dundor developer, since it is their server.
 
-The token is the only secret. The application ID and public key on the portal
-are public identifiers, and a gateway bot never uses the public key.
+- [ ] Send the developer this invite URL ⏫
 
-### 2. Put the token on bespin
-
-- [ ] Write the token into the staged env file ⏫
-
-```bash
-ssh bespin
-nano /home/dundor/dundor-ledger/apps/bot/.env
+```
+https://discord.com/oauth2/authorize?client_id=1534422776914382859&scope=bot&permissions=84992
 ```
 
-Replace `paste-bot-token-here` so the line reads `DISCORD_TOKEN=<your token>`.
-Leave `DUNDOR_APP_ID` commented out unless you need to point at a different
-application than the default `1284876985822216232`.
+`84992` = View Channels (1024) + Send Messages (2048) + Embed Links (16384) +
+Read Message History (65536).
 
-- [ ] Confirm the permissions survived editing (some editors rewrite the file):
+- [ ] Ask them to confirm the grant survives in the channels where Dundor posts, if the server uses per-channel permission overrides
+- [ ] Ask them to confirm Dundor's application ID ⏫
 
-```bash
-chown dundor:dundor /home/dundor/dundor-ledger/apps/bot/.env
-chmod 600 /home/dundor/dundor-ledger/apps/bot/.env
-ls -l /home/dundor/dundor-ledger/apps/bot/.env   # expect -rw------- dundor dundor
-```
+  The bot only auto-analyzes attachments from the app matching `DUNDOR_APP_ID`,
+  which defaults to `1284876985822216232`. If that ID is wrong for their current
+  deployment, the bot sits in the channel doing nothing, with no error. If they
+  give a different ID, uncomment and set `DUNDOR_APP_ID` in `apps/bot/.env` and
+  run `systemctl restart dundor-bot`.
 
-`deploy/deploy-bot.sh` excludes `.env` from rsync, so this file survives every
-future redeploy. You only do this once.
+- [ ] Ask them to whitelist this bot as a command source, for `!ledger pull`
 
-### 3. Install the systemd unit
+  Bots cannot invoke other bots' commands and Dundor normally ignores bot
+  messages, so `!ledger pull` only closes the loop with that whitelist. Without
+  it the feature is inert — auto-analysis still works, but a human has to type
+  `dun logs get n`. Worth asking while you have their attention; otherwise it
+  costs a second round-trip.
 
-Run these on bespin as root. The unit is already on the box at
-`/home/dundor/dundor-ledger/apps/bot/dundor-bot.service`, and its paths already
-match the deployment — no editing needed.
-
-- [ ] Install and start the service ⏫
-
-```bash
-cp /home/dundor/dundor-ledger/apps/bot/dundor-bot.service /etc/systemd/system/
-systemctl daemon-reload
-systemctl enable --now dundor-bot
-```
-
-- [ ] Confirm it came up:
-
-```bash
-systemctl status dundor-bot --no-pager
-journalctl -u dundor-bot -n 50 --no-pager
-```
-
-A healthy start logs the bot's gateway login. If it restarts in a loop, the
-usual causes are a bad token (`Unauthorized` / `TOKEN_INVALID`) or the Message
-Content Intent still being off (`Used disallowed intents`).
-
-### 4. Smoke test in Discord
+### 5. Smoke test in Discord
 
 - [ ] Upload a saved Dundor `.txt` battle log to a channel the bot can see
 - [ ] Confirm it replies with a summary embed
@@ -90,7 +67,7 @@ Use a fixture from the repo if you don't have a fresh log handy, e.g.
 
 ## Redeploying later
 
-Once the above is done, updates are one command from the repo root on devbuntu:
+Updates are one command from the repo root on devbuntu:
 
 ```bash
 ./deploy/deploy-bot.sh
@@ -98,6 +75,45 @@ Once the above is done, updates are one command from the repo root on devbuntu:
 
 It rebuilds, ships, reinstalls production dependencies, verifies the build, and
 restarts the service. It never touches `.env` or the unit file.
+
+## Troubleshooting
+
+```bash
+systemctl status dundor-bot --no-pager
+journalctl -u dundor-bot -n 50 --no-pager
+systemctl show dundor-bot -p NRestarts --value   # climbing = crash loop
+```
+
+`RestartSec=10` means a bad token loops quietly every ten seconds rather than
+failing loudly, so check `NRestarts` rather than trusting `active (running)`
+right after a start.
+
+- `Unauthorized` / `TOKEN_INVALID` → wrong or rotated token
+- `Used disallowed intents` → Message Content Intent got switched off
+- `Missing Permissions` → the invite lacked Embed Links; see below
+
+## Two gotchas that cost us time
+
+**The public key is not the token.** The portal's General Information page
+shows a 64-character lowercase-hex Public Key. The bot token is on the **Bot**
+page and looks completely different: ~72 characters in three dot-separated
+parts, mixed case, with `_` and `-`. A gateway bot never uses the public key at
+all. Pasting the wrong one yields a crash loop with a bare `Unauthorized`,
+which gives no hint that the wrong *kind* of credential is in the file. To
+check the shape without printing the secret:
+
+```bash
+awk -F= '/^DISCORD_TOKEN=/{v=substr($0,index($0,"=")+1);
+  printf "len=%d parts=%d\n", length(v), split(v,a,".")}' \
+  /home/dundor/dundor-ledger/apps/bot/.env
+# want: len=~72 parts=3
+```
+
+**Embed Links is mandatory.** The reply is an embed (`apps/bot/src/index.ts`),
+so without that permission the bot connects, reads the log, and then fails
+every reply with `Missing Permissions`. The bot's own README listed only three
+permissions and omitted it; fixed in commit `3cb896c`. Getting this wrong means
+going back to the other developer for a re-invite.
 
 ## Notes
 
@@ -115,7 +131,8 @@ restarts the service. It never touches `.env` or the unit file.
   Python under `/opt/ge-tracker`). The bot shares nothing with them — it is a
   Node process with no ports and no inbound traffic — but the box only has
   961 MB of RAM, which is why the deploy script builds locally and ships
-  `dist/` rather than compiling on the droplet.
+  `dist/` rather than compiling on the droplet. The bot's resident set is
+  about 108 MB.
 
 - The web app is unrelated to this host. It deploys to Cloudflare Workers via
   `npm run deploy` from the repo root.
