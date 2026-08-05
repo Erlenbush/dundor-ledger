@@ -274,16 +274,6 @@ const fightsIn = (name: string): { fights: ExportedFight[]; text: string } => {
 const button = (draft: ReturnType<typeof buildReply>): { url: string; label: string } =>
   (draft.components as Array<{ components: Array<{ url: string; label: string }> }>)[0]!.components[0]!;
 
-/** Incompressible filler; a repeated character would gzip well under budget. */
-const noise = (length: number): string => {
-  let seed = 1;
-  let out = '';
-  for (let i = 0; i < length; i++) {
-    seed = Math.imul(seed, 48271) % 2147483647;
-    out += String.fromCharCode(33 + (seed % 94));
-  }
-  return out;
-};
 
 describe('buildReply', () => {
   it('adds no button when no site is configured', () => {
@@ -310,10 +300,13 @@ describe('buildReply', () => {
 
   it('points at the bare site and says so when the fight is too long', () => {
     const { fights } = fightsIn('snake-xl100.txt');
+    // The 44-turn Fungus log encodes to about 4,634 characters, over the
+    // default MAX_LINK_CHARS of 3,000. If the probe raises that constant above
+    // 4,634 this test starts failing, which is the correct signal to update it.
     const draft = buildReply({
       fights,
       problems: [],
-      logText: noise(20_000),
+      logText: fixture('fungus-creature-loss-xl63.txt'),
       webUrl: 'https://x.dev',
     });
     expect(button(draft).url).toBe('https://x.dev');
