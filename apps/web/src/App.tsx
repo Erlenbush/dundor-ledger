@@ -1,7 +1,8 @@
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { analyze, deriveInsights, parseFight, splitLogs } from '@dundor/parser';
 import { isOk, type LoadedFight } from './types.js';
 import { plural } from './format.js';
+import { canDecode, decodeLog, readFragment } from './link.js';
 import { SAMPLE } from './sample.js';
 import { CommandDeck } from './components/CommandDeck.js';
 import { DamageChart } from './components/DamageChart.js';
@@ -90,6 +91,40 @@ export function App() {
     }
     usable.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
     load(await Promise.all(usable.map(async (f) => ({ label: f.name, text: await f.text() }))));
+  }, [load]);
+
+  // A fight handed over from Discord. The log rides in the fragment, which the
+  // browser never sends to the server, so it arrives having touched nothing.
+  // Every failure leaves the drop zone on screen rather than dead-ending.
+  useEffect(() => {
+    const frag = readFragment(window.location.hash);
+    if (frag.kind === 'none') return;
+
+    if (frag.kind === 'unknown-scheme') {
+      setStatus({ error: true, text: 'This link was made by a newer version of the bot.' });
+      return;
+    }
+    if (!canDecode()) {
+      setStatus({
+        error: true,
+        text: "Your browser can't open compressed links. Download the .txt from Discord and drop it here.",
+      });
+      return;
+    }
+
+    let cancelled = false;
+    decodeLog(frag.encoded)
+      .then((text) => {
+        // load() already reports a decoded payload that is not a fight log,
+        // reusing the parser's own wording.
+        if (!cancelled) load([{ label: 'Shared fight', text }]);
+      })
+      .catch(() => {
+        if (!cancelled) setStatus({ error: true, text: 'This link looks damaged or truncated.' });
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [load]);
 
   const shown = fights[current];
