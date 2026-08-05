@@ -26,6 +26,9 @@ DISCORD_TOKEN=... npm run start -w @dundor/bot
 `DUNDOR_APP_ID` overrides which application counts as Dundor; it defaults to
 the public id 1284876985822216232.
 
+For a long-running deployment, `dundor-bot.service` is an example systemd unit
+and `.env.example` shows the environment file. The bot needs Node 20 or newer.
+
 To preview the reply for a log without Discord:
 
 ```

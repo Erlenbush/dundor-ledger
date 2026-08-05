@@ -1,0 +1,21 @@
+# Example systemd unit. Install:
+#   sudo cp apps/bot/dundor-bot.service /etc/systemd/system/
+#   sudo systemctl edit dundor-bot   (or edit the paths below)
+#   sudo systemctl enable --now dundor-bot
+[Unit]
+Description=Dundor Ledger Discord bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Adjust to wherever the repo lives and who should run it.
+User=dundor
+WorkingDirectory=/home/dundor/dundor-ledger
+EnvironmentFile=/home/dundor/dundor-ledger/apps/bot/.env
+ExecStart=/usr/bin/node apps/bot/dist/index.js
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
