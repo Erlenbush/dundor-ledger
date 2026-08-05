@@ -76,7 +76,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
       headline: `You landed ${mine.hits} of ${plural(mine.attacks, 'swing')}.`,
       body: `Melee accuracy **${acc}** against evasion **${ev}** left you missing ` +
         `**${pct(100 - a.playerHitRate)}** of the time. Every miss is a full turn of nothing. ` +
-        `With damage this far ahead of the target's health pool, accuracy rather than power is ` +
+        `With damage this far ahead of the target's health pool, accuracy rather than power ` +
         `shortens these fights.`,
     });
   }
