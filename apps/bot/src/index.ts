@@ -77,9 +77,17 @@ async function analyzeAttachments(msg: Message): Promise<void> {
 
   const shown = fights.slice(0, MAX_EMBEDS);
   const skipped = fights.length - shown.length;
+  // A single fight gets every insight in full. Several in one reply would be a
+  // wall of text, so those fall back to headlines and say how to get the rest.
+  const detailed = fights.length === 1;
+  const note = detailed
+    ? null
+    : skipped > 0
+      ? `Showing ${shown.length} of ${fights.length} fights. Upload one on its own for the full breakdown.`
+      : `${fights.length} fights. Upload one on its own for the full breakdown.`;
   await msg.reply({
     embeds: shown.map((f) => {
-      const e = formatFight(f);
+      const e = formatFight(f, detailed);
       return {
         title: e.title,
         description: e.description,
@@ -88,9 +96,7 @@ async function analyzeAttachments(msg: Message): Promise<void> {
         footer: { text: e.footer },
       };
     }),
-    ...(skipped > 0
-      ? { content: `Showing ${shown.length} of ${fights.length} fights.` }
-      : {}),
+    ...(note ? { content: note } : {}),
     allowedMentions: { repliedUser: false },
   });
 }
