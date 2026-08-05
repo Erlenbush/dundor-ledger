@@ -54,6 +54,8 @@ export function App() {
   const [fights, setFights] = useState<LoadedFight[]>(initial);
   const [current, setCurrent] = useState(0);
   const [status, setStatus] = useState<Status>({ text: describe(initial), error: false });
+  /** Set when a link failed to open, so the page can say so above the fold. */
+  const [linkFail, setLinkFail] = useState<string | null>(null);
 
   const load = useCallback((sources: Source[]) => {
     const parsed = sources.flatMap(expand);
@@ -100,15 +102,20 @@ export function App() {
     const frag = readFragment(window.location.hash);
     if (frag.kind === 'none') return;
 
+    // A failed link must say so loudly. Until something loads, the page shows
+    // a sample fight, so a quiet error reads as a successful load of someone
+    // else's fight — worse than a blank page, because nothing looks wrong.
+    const fail = (text: string) => {
+      setLinkFail(text);
+      setStatus({ error: true, text });
+    };
+
     if (frag.kind === 'unknown-scheme') {
-      setStatus({ error: true, text: 'This link was made by a newer version of the bot.' });
+      fail('This link was made by a newer version of the bot.');
       return;
     }
     if (!canDecode()) {
-      setStatus({
-        error: true,
-        text: "Your browser can't open compressed links. Download the .txt from Discord and drop it here.",
-      });
+      fail("Your browser can't open compressed links. Download the .txt from Discord and drop it here.");
       return;
     }
 
@@ -120,7 +127,7 @@ export function App() {
         if (!cancelled) load([{ label: 'Shared fight', text }]);
       })
       .catch(() => {
-        if (!cancelled) setStatus({ error: true, text: 'This link looks damaged or truncated.' });
+        if (!cancelled) fail('This link looks damaged or truncated.');
       });
     return () => {
       cancelled = true;
@@ -140,6 +147,17 @@ export function App() {
           at once and it totals them up.
         </p>
       </header>
+
+      {linkFail ? (
+        <div className="linkfail" role="alert">
+          <strong>This link didn’t open</strong>
+          <p>{linkFail}</p>
+          <p className="sub">
+            The fight shown below is the built-in sample, not the one from your link. Drop the{' '}
+            <code className="inline">.txt</code> below to read the real one.
+          </p>
+        </div>
+      ) : null}
 
       <Ingest
         onFiles={onFiles}

@@ -224,6 +224,34 @@ label.filebtn:focus-within, button.primary:focus-visible { outline: 2px solid va
 .actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
 .status { font-size: 12px; color: var(--ink-2); }
 .status.err { color: var(--crit); }
+
+/*
+ * A link that failed to open.
+ *
+ * This needs to be loud. The app renders a sample fight until something is
+ * loaded, so a quiet error reads as "here is your fight" — the reader sees a
+ * complete analysis that isn't theirs and no sign anything went wrong.
+ */
+.linkfail {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--crit);
+  border-left-width: 4px;
+  border-radius: 3px;
+  background: var(--crit-soft);
+}
+.linkfail strong {
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--crit);
+}
+.linkfail p { margin: 0; font-size: 14px; color: var(--ink); }
+.linkfail .sub { font-size: 12.5px; color: var(--ink-2); }
 textarea {
   font-family: var(--mono);
   font-size: 11.5px;
