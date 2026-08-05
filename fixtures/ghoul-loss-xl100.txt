@@ -1,0 +1,160 @@
+The fight happens between food_ and Ghoul!
+Stats for food_ ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 1079
+  Mana Left: 12
+  - stats:
+    PlayerData:
+      Hp: 1079
+      Mana: 12
+      Rfire: 0
+      Rcold: 0
+      Rpois: 0
+      Relec: 2
+      Revil: 1
+      Racid: 0
+      Spirit: 2
+      See Invis: 0
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 60
+      Ev: 16
+      Sh: 9
+      Damages: [DamageInfo(type=:punch: physical, min_amount=15, max_amount=50), DamageInfo(type=:fire: fire, min_amount=4, max_amount=15)]
+      Attack Speed: 1.58
+      Melee Accuracy: 9.0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 2.0
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: food_
+      Effect Power Level: 0
+      Spells: []
+      User Id: 123369068005818368
+      Resurrection: 10
+      God: None
+      Str : 10
+      Dex: 25
+      Int : 7
+      Xl: 100
+  Melee Evade Chance: 22.270013882530886
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: food_
+  Is Silenced: False
+Stats for Ghoul ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 1100
+  Mana Left: 0
+  - stats:
+    MonsterData:
+      Hp: 1100
+      Mana: 0
+      Rfire: 0
+      Rcold: 0
+      Rpois: 4
+      Relec: 0
+      Revil: 3
+      Racid: 0
+      Spirit: 3
+      See Invis: False
+      Actual Hp Regen: 5.0
+      Actual Mp Regen: 0.0
+      Ac: 50
+      Ev: 30
+      Sh: 20
+      Damages: [DamageInfo(type=:punch: physical, min_amount=45, max_amount=150), DamageInfo(type=:skull: evil, min_amount=186, max_amount=620)]
+      Attack Speed: 1.0
+      Melee Accuracy: 0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 0.0
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: Ghoul
+      Effect Power Level: 0
+  Melee Evade Chance: 9.534946489910949
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: Ghoul
+  Is Silenced: False
+  Affected By Holy Damage: True
+Logs ------------------------------------------------------------------------------------------
+The distance between you is 6 tiles.
+[food_] starts first because [Ghoul] hasn't noticed them yet.
+TURN 1 ------------------------------------------------------------------------------------------
+[food_] sneaks 1 space closer but alerts [Ghoul]! Distance left = 5. Turn ended for [food_].
+[Ghoul] gains 1.0 moves. Moves left = 1.0. HP left: 1,100/1,100. Mana left: 0/0.
+[Ghoul] moves 1 space closer to [food_]. Distance left = 4.
+[Ghoul] uses 1.0 moves! Moves left = 0.0.
+TURN 3 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 1,079/1,079. Mana left: 12/12.
+[food_] moves 1 space closer to [Ghoul]. Distance left = 3.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 4 ------------------------------------------------------------------------------------------
+[Ghoul] gains 1.0 moves. Moves left = 1.0. HP left: 1,100/1,100. Mana left: 0/0.
+[Ghoul] moves 1 space closer to [food_]. Distance left = 2.
+[Ghoul] uses 1.0 moves! Moves left = 0.0.
+TURN 5 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 1,079/1,079. Mana left: 12/12.
+[food_] moves 1 space closer to [Ghoul]. Distance left = 1.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 6 ------------------------------------------------------------------------------------------
+[Ghoul] gains 1.0 moves. Moves left = 1.0. HP left: 1,100/1,100. Mana left: 0/0.
+[Ghoul] moves 1 space closer to [food_]. Distance left = 0.
+[Ghoul] uses 1.0 moves! Moves left = 0.0.
+TURN 7 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 1,079/1,079. Mana left: 12/12.
+TURN 8 ------------------------------------------------------------------------------------------
+[Ghoul] gains 1.0 moves. Moves left = 1.0. HP left: 1,100/1,100. Mana left: 0/0.
+[Ghoul] hits [food_] with a melee attack! Applying each damage. [evade roll: 83.15912 > 22.27001].
+[Ghoul] rolls 107 for :punch: physical!
+[food_] rolls 49 for AC and reduces the damage by 49! Damage Left = 58
+[food_] gets damaged by 58 damage! HP Left = 1,021/1,079.
+[Ghoul] rolls 413 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 345
+[food_] rolls 50 for AC and reduces the damage by 50! Damage Left = 295
+[food_] gets damaged by 295 damage! HP Left = 726/1,079.
+[Ghoul] uses 1.00 moves! Moves left = 0.0.
+TURN 9 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 2.0. HP left: 726/1,079. Mana left: 12/12.
+[food_] hits [Ghoul] with a melee attack! Applying each damage. [evade roll: 84.27695 > 9.53495].
+[food_] rolls 36 for :punch: physical!
+[Ghoul] rolls 33 for AC and reduces the damage by 33! Damage Left = 3
+[Ghoul] gets damaged by 3 damage! HP Left = 1,097/1,100.
+[food_] rolls 15 for :fire: fire!
+[Ghoul] reduces the damage by 0.00% because of their resistance to this element! Damage Left = 15
+[Ghoul] rolls 35 for AC and reduces the damage by 35! Damage Left = 1
+[Ghoul] gets damaged by 1 damage! HP Left = 1,096/1,100.
+[food_] uses 1.58 moves! Moves left = 0.41999999999999993.
+TURN 10 ------------------------------------------------------------------------------------------
+[Ghoul] gains 1.0 moves. Moves left = 1.0. HP left: 1,096/1,100. Mana left: 0/0.
+[Ghoul] gains 5.00 HP Regen. HP Regen gained: 5.00.
+[Ghoul] regained 5.0 HP. Current HP = 1,100/1,100. HP Regen left: 0.00.
+[Ghoul] hits [food_] with a melee attack! Applying each damage. [evade roll: 97.96144 > 22.27001].
+[Ghoul] rolls 138 for :punch: physical!
+[food_] rolls 30 for AC and reduces the damage by 30! Damage Left = 108
+[food_] gets damaged by 108 damage! HP Left = 618/1,079.
+[Ghoul] rolls 581 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 485
+[food_] rolls 40 for AC and reduces the damage by 40! Damage Left = 445
+[food_] gets damaged by 445 damage! HP Left = 173/1,079.
+[Ghoul] uses 1.00 moves! Moves left = 0.0.
+TURN 11 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.42. HP left: 173/1,079. Mana left: 12/12.
+TURN 12 ------------------------------------------------------------------------------------------
+[Ghoul] gains 1.0 moves. Moves left = 1.0. HP left: 1,100/1,100. Mana left: 0/0.
+[Ghoul] hits [food_] with a melee attack! Applying each damage. [evade roll: 44.25002 > 22.27001].
+[Ghoul] rolls 148 for :punch: physical!
+[food_] rolls 41 for AC and reduces the damage by 41! Damage Left = 107
+[food_] gets damaged by 107 damage! HP Left = 66/1,079.
+[Ghoul] rolls 389 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 325
+[food_] rolls 52 for AC and reduces the damage by 52! Damage Left = 273
+[food_] gets damaged by 273 damage! HP Left = -207/1,079.
+[Ghoul] uses 1.00 moves! Moves left = 0.0.
+[food_] dies!
+[Ghoul] wins the fight because [food_] has died!

@@ -518,6 +518,68 @@ describe('insights', () => {
   });
 });
 
+describe('Ghoul, a death by being hit', () => {
+  const { fight, analysis } = load('ghoul-loss-xl100.txt');
+  const byId = Object.fromEntries(deriveInsights(fight, analysis).map((i) => [i.id, i]));
+
+  it('names getting hit as the reason, which nothing used to do', () => {
+    expect(byId['exposure']).toBeDefined();
+    expect(byId['exposure']!.headline).toBe('Ghoul landed 3 of 3 swings.');
+    expect(byId['exposure']!.severity).toBe('critical');
+  });
+
+  it('quantifies the evade chance against the swings taken', () => {
+    // 22.27% evade over 3 swings is 0.7 expected dodges.
+    expect(byId['exposure']!.body).toContain('**22.3%**');
+    expect(byId['exposure']!.body).toContain('**0.7**');
+  });
+
+  it('explains why armour did not compensate', () => {
+    // 1286 of 1776 landed. AC 60 is flat against a 186-620 evil band.
+    expect(byId['exposure']!.body).toContain('**1776 damage**');
+    expect(byId['exposure']!.body).toContain('**1286**');
+    expect(byId['exposure']!.body).toContain('**186–620**');
+  });
+
+  it('does not report a damage mix built from a single landed swing', () => {
+    // 3 physical and 1 fire is 25% fire, which is arithmetic, not a finding.
+    expect(analysis.stats[analysis.player]!.dealt).toBe(4);
+    expect(byId['damage-mix']).toBeUndefined();
+  });
+});
+
+describe('exposure stays quiet when armour did its job', () => {
+  it('says nothing on a loss where mitigation held', () => {
+    // The Fungus Creature landed 36 of 38 but absorbed 94.1%; that fight was
+    // lost to accuracy and attrition, and accuracy already says so.
+    const { fight, analysis } = load('fungus-creature-loss-xl63.txt');
+    const ids = deriveInsights(fight, analysis).map((i) => i.id);
+    expect(analysis.playerMitigation.pct).toBeGreaterThan(75);
+    expect(ids).not.toContain('exposure');
+    expect(ids).toContain('accuracy');
+  });
+
+  it('says nothing on a fight the player won', () => {
+    const { fight, analysis } = load('lava-golem-xl24.txt');
+    expect(deriveInsights(fight, analysis).map((i) => i.id)).not.toContain('exposure');
+  });
+});
+
+describe('damage mix floor', () => {
+  it('drops a split where the second element contributed almost nothing', () => {
+    // 344 physical against 2 poison is 0.6%, which is noise dressed as a stat.
+    const { fight, analysis } = load('magma-golem-loss-xl35.txt');
+    expect(analysis.stats[analysis.player]!.byType['poison']).toBe(2);
+    expect(deriveInsights(fight, analysis).map((i) => i.id)).not.toContain('damage-mix');
+  });
+
+  it('keeps a split that carried real damage', () => {
+    const { fight, analysis } = load('lava-golem-xl24.txt');
+    expect(analysis.stats[analysis.player]!.byType['poison']).toBe(33);
+    expect(deriveInsights(fight, analysis).map((i) => i.id)).toContain('damage-mix');
+  });
+});
+
 describe('Icecorn, a vulnerability that is not cold', () => {
   // Every other fixture's vulnerable monster is weak to cold, so a matchup bug
   // that favoured cold would pass all of them. This one is weak to fire while

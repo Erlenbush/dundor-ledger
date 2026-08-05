@@ -15,6 +15,14 @@ const plural = (n: number, w: string): string => `${n} ${w}${n === 1 ? '' : 's'}
 const stat = (f: Fight, who: string, key: string): string | undefined =>
   f.entities[who]?.stats[key];
 
+/**
+ * Least damage a secondary element can contribute before its share is worth
+ * reporting. A fight where one landed swing dealt 3 physical and 1 fire really
+ * did put 25% of its output into fire, and saying so is arithmetic rather than
+ * analysis. Real splits in the fixtures run 33 and up; the noise runs 1 and 2.
+ */
+const MIX_FLOOR = 10;
+
 const resistPips = (f: Fight, who: string, key: string): number => {
   const v = Number(stat(f, who, key));
   return Number.isFinite(v) ? v : 0;
@@ -170,6 +178,40 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
     });
   }
 
+  // ── Exposure ──────────────────────────────────────────────────────────────
+  // The mirror of Defense, and the gap that let a fight lost to being hit every
+  // single turn produce no insight naming the reason. Defense only ever fires
+  // to congratulate a win, so a death by attrition through armour that never
+  // helped was described in terms of dice and attack speed and nothing else.
+  // Requires low mitigation: when armour did hold, the loss was about something
+  // else and the accuracy or attack speed findings own it.
+  if (
+    playerDied &&
+    mit.incomingRaw > 0 &&
+    mit.pct < 75 &&
+    theirs.attacks > 0 &&
+    a.monsterHitRate != null &&
+    a.monsterHitRate >= 50
+  ) {
+    const evade = Number(stat(fight, P, 'Melee Evade Chance'));
+    const band = [...(fight.entities[M]?.damages ?? [])].sort((x, y) => y.max - x.max)[0];
+    const dodges = Number.isFinite(evade) ? (theirs.attacks * evade) / 100 : null;
+    out.push({
+      id: 'exposure',
+      severity: 'critical',
+      tag: 'Evasion',
+      headline: `${M} landed ${theirs.hits} of ${plural(theirs.attacks, 'swing')}.`,
+      body:
+        (dodges != null
+          ? `Your evade chance was **${pct(evade)}**, so you were expected to dodge **${one(dodges)}** of them. `
+          : '') +
+        `**${mit.incomingRaw} damage** was rolled at you and **${mit.taken}** landed, so armour covered ` +
+        `only **${pct(mit.pct)}**. AC **${stat(fight, P, 'Ac')}** subtracts a flat amount, and against ` +
+        `${band ? `**${band.min}–${band.max}**` : 'hits'} rolls it cannot scale with the hit. Not being ` +
+        `hit is the defence that does.`,
+    });
+  }
+
   // ── Attack speed ──────────────────────────────────────────────────────────
   const stalls = a.stalled[P] ?? [];
   const speed = attackCost(fight, P);
@@ -272,7 +314,7 @@ export function deriveInsights(fight: Fight, a: Analysis): Insight[] {
 
   // ── Damage mix ────────────────────────────────────────────────────────────
   const types = Object.entries(mine.byType).sort((x, y) => y[1] - x[1]);
-  if (types.length > 1) {
+  if (types.length > 1 && (types[1]?.[1] ?? 0) >= MIX_FLOOR) {
     const total = types.reduce((n, [, v]) => n + v, 0);
     const [sname, sval] = types[1]!;
     const lost = mine.resistLossByType[sname] ?? 0;
