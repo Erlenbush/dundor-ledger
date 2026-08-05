@@ -2,9 +2,12 @@ import { RE } from './patterns.js';
 import type { Beat, DamageInfo, DamageInstance, Fight, FightEntity, Turn } from './types.js';
 
 const num = (s: string): number | null => {
-  const n = Number.parseFloat(s);
+  const n = Number.parseFloat(s.replace(/,/g, ''));
   return Number.isFinite(n) ? n : null;
 };
+
+/** Integer capture to number, tolerating thousands separators ("2,205"). */
+const int = (s: string): number => Number(s.replace(/,/g, ''));
 
 /**
  * Split a paste or attachment that holds several fights back to back.
@@ -43,7 +46,7 @@ function parseStatBlock(name: string, lines: string[]): FightEntity {
     RE.damageInfo.lastIndex = 0;
     let d: RegExpExecArray | null;
     while ((d = RE.damageInfo.exec(src)) !== null) {
-      damages.push({ emoji: d[1]!, type: (d[2] ?? '').trim(), min: Number(d[3]), max: Number(d[4]) });
+      damages.push({ emoji: d[1]!, type: (d[2] ?? '').trim(), min: int(d[3]!), max: int(d[4]!) });
     }
   }
 
@@ -127,25 +130,25 @@ export function parseFight(text: string): Fight {
     let m: RegExpMatchArray | null;
 
     if ((m = line.match(RE.turn))) {
-      pushTurn(Number(m[1]));
+      pushTurn(int(m[1]!));
       pending = null;
       lastAttack = null;
       continue;
     }
-    if ((m = line.match(RE.dist))) { startDistance = Number(m[1]); continue; }
+    if ((m = line.match(RE.dist))) { startDistance = int(m[1]!); continue; }
     if ((m = line.match(RE.first))) { firstMover = m[1]!; ambush = true; continue; }
 
     if ((m = line.match(RE.gains))) {
       add({ t: 'gains', who: m[1]!, amount: num(m[2]!), movesLeft: num(m[3]!),
-            hp: Number(m[4]), hpMax: Number(m[5]), mp: Number(m[6]), mpMax: Number(m[7]) });
+            hp: int(m[4]!), hpMax: int(m[5]!), mp: int(m[6]!), mpMax: int(m[7]!) });
       continue;
     }
     if ((m = line.match(RE.sneak))) {
-      add({ t: 'sneak', who: m[1]!, spaces: Number(m[2]), target: m[3]!, distance: Number(m[4]) });
+      add({ t: 'sneak', who: m[1]!, spaces: int(m[2]!), target: m[3]!, distance: int(m[4]!) });
       continue;
     }
     if ((m = line.match(RE.move))) {
-      add({ t: 'move', who: m[1]!, spaces: Number(m[2]), target: m[3]!, distance: Number(m[4]) });
+      add({ t: 'move', who: m[1]!, spaces: int(m[2]!), target: m[3]!, distance: int(m[4]!) });
       continue;
     }
     if ((m = line.match(RE.uses))) {
@@ -165,28 +168,28 @@ export function parseFight(text: string): Fight {
     // Must precede `roll`, since both begin "[x] rolls N for".
     if ((m = line.match(RE.ac))) {
       if (pending) {
-        pending.acRoll = Number(m[2]);
-        pending.acCut = Number(m[3]);
-        pending.afterAc = Number(m[4]);
+        pending.acRoll = int(m[2]!);
+        pending.acCut = int(m[3]!);
+        pending.afterAc = int(m[4]!);
       }
       continue;
     }
     if ((m = line.match(RE.resist))) {
       if (pending) {
         pending.resistPct = num(m[2]!) ?? undefined;
-        pending.afterResist = Number(m[3]);
+        pending.afterResist = int(m[3]!);
       }
       continue;
     }
     if ((m = line.match(RE.roll))) {
-      pending = { by: m[1]!, emoji: m[3]!, type: (m[4] ?? '').trim(), raw: Number(m[2]) };
+      pending = { by: m[1]!, emoji: m[3]!, type: (m[4] ?? '').trim(), raw: int(m[2]!) };
       if (lastAttack) lastAttack.damages.push(pending);
       continue;
     }
     if ((m = line.match(RE.damaged))) {
-      const amount = Number(m[2]);
-      const hp = Number(m[3]);
-      const hpMax = Number(m[4]);
+      const amount = int(m[2]!);
+      const hp = int(m[3]!);
+      const hpMax = int(m[4]!);
       if (pending) {
         pending.dealt = amount;
         pending.victim = m[1]!;
@@ -249,7 +252,9 @@ export function parseFight(text: string): Fight {
   }
 
   const statNum = (n: string, key: string): number | null => {
-    const v = Number(entities[n]!.stats[key]);
+    const raw = entities[n]!.stats[key];
+    if (raw == null) return null;
+    const v = int(raw);
     return Number.isFinite(v) ? v : null;
   };
   // `Hp` (inside PlayerData/MonsterData) is the maximum; `Hp Left` on the

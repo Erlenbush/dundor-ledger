@@ -65,6 +65,13 @@ You do **not** have to alternate. Run a batch of fights, collect the logs at the
 file holding several fights is split automatically. With more than one loaded you get a
 fight switcher and session totals.
 
+## Discord bot
+
+`apps/bot` watches a server for the .txt logs Dundor attaches and replies with
+a summary embed on the spot. Humans can also upload a saved log for the same
+treatment. See `apps/bot/README.md` for setup; it needs a bot token and the
+Message Content intent.
+
 ## Analyzing fights in Python
 
 `npm run -s tojson <files>` converts logs to JSON with the full parse, analysis and
@@ -113,6 +120,10 @@ the UI renders, so nothing the parser emits can inject markup.
   not heal you between fights, so these differ often. One real log opens at
   47/389. Seeding a chart from the maximum invents a 342-point cliff that never
   happened.
+- **Numbers grow thousands separators.** Once a value crosses 1,000 the log
+  prints it as `2,205`, in HP lines and damage lines alike. Integer captures
+  accept the comma and conversions strip it; a plain `\d+` silently drops the
+  monster's whole HP track.
 - **Negative resistance is a vulnerability.** A Lava Golem's `Rcold: -2` means cold lands
   ~33% harder. Filtering the resistance table to positive values hides the single most
   actionable fact about a monster.

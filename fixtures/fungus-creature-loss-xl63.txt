@@ -1,0 +1,604 @@
+The fight happens between food_ and Fungus Creature!
+Stats for food_ ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 964
+  Mana Left: 13
+  - stats:
+    PlayerData:
+      Hp: 964
+      Mana: 13
+      Rfire: 1
+      Rcold: 1
+      Rpois: 0
+      Relec: 2
+      Revil: 1
+      Racid: 3
+      Spirit: 1
+      See Invis: 2
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 359
+      Ev: 10
+      Sh: 28
+      Damages: [DamageInfo(type=:punch: physical, min_amount=182, max_amount=609), DamageInfo(type=:green_circle: poison, min_amount=45, max_amount=152)]
+      Attack Speed: 0.5
+      Melee Accuracy: 4.0
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 1.5
+      Effects Can Be Silenced: False
+      On Hit Effects: [OnHitEffect(effect_id=0, chance=20.0, power=5)]
+      Name: food_
+      Effect Power Level: 0
+      Spells: []
+      User Id: 123369068005818368
+      Resurrection: 2
+      God: Stcafetra
+      Str : 77
+      Dex: 10
+      Int : 12
+      Xl: 63
+  Melee Evade Chance: 13.587289700909427
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: food_
+  Is Silenced: False
+Stats for Fungus Creature ------------------------------------------------------------------------------------------
+FightEntity:
+  Moves Left: 0.0
+  Hp Left: 2205
+  Mana Left: 0
+  - stats:
+    MonsterData:
+      Hp: 2205
+      Mana: 0
+      Rfire: 0
+      Rcold: 0
+      Rpois: 1
+      Relec: 0
+      Revil: 3
+      Racid: 1
+      Spirit: 1
+      See Invis: False
+      Actual Hp Regen: 0.0
+      Actual Mp Regen: 0.0
+      Ac: 31
+      Ev: 94
+      Sh: 31
+      Damages: [DamageInfo(type=:punch: physical, min_amount=75, max_amount=252), DamageInfo(type=:skull: evil, min_amount=132, max_amount=441)]
+      Attack Speed: 0.5
+      Melee Accuracy: 5
+      Fight Effect Use Chance: 0.0
+      Available Fight Effects: []
+      Sneak Chance: 0.0
+      Stab Multiplier: 0.0
+      Effects Can Be Silenced: False
+      On Hit Effects: []
+      Name: Fungus Creature
+      Effect Power Level: 0
+  Melee Evade Chance: 93.99133498259924
+  Spell Evade Chances: N/A (opponent has no spells)
+  Name: Fungus Creature
+  Is Silenced: False
+  Affected By Holy Damage: True
+Logs ------------------------------------------------------------------------------------------
+The distance between you is 6 tiles.
+[food_] starts first because [Fungus Creature] hasn't noticed them yet.
+TURN 1 ------------------------------------------------------------------------------------------
+[food_] sneaks 1 space closer but alerts [Fungus Creature]! Distance left = 5. Turn ended for [food_].
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] moves 1 space closer to [food_]. Distance left = 4.
+[Fungus Creature] uses 1.0 moves! Moves left = 0.0.
+TURN 3 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 964/964. Mana left: 13/13.
+[food_] moves 1 space closer to [Fungus Creature]. Distance left = 3.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 4 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] moves 1 space closer to [food_]. Distance left = 2.
+[Fungus Creature] uses 1.0 moves! Moves left = 0.0.
+TURN 5 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 964/964. Mana left: 13/13.
+[food_] moves 1 space closer to [Fungus Creature]. Distance left = 1.
+[food_] uses 1.0 moves! Moves left = 0.0.
+TURN 6 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] moves 1 space closer to [food_]. Distance left = 0.
+[Fungus Creature] uses 1.0 moves! Moves left = 0.0.
+TURN 7 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 964/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 26.94241 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 57.37970 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 8 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 32.66086 > 13.58729].
+[Fungus Creature] rolls 212 for :punch: physical!
+[food_] rolls 215 for AC and reduces the damage by 215! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 963/964.
+[Fungus Creature] rolls 407 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 340
+[food_] rolls 200 for AC and reduces the damage by 200! Damage Left = 140
+[food_] gets damaged by 140 damage! HP Left = 823/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 32.15669 > 13.58729].
+[Fungus Creature] rolls 226 for :punch: physical!
+[food_] rolls 350 for AC and reduces the damage by 350! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 822/964.
+[Fungus Creature] rolls 289 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 241
+[food_] rolls 296 for AC and reduces the damage by 296! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 821/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 9 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 821/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 63.75586 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 63.39528 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 10 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 48.12398 > 13.58729].
+[Fungus Creature] rolls 247 for :punch: physical!
+[food_] rolls 232 for AC and reduces the damage by 232! Damage Left = 15
+[food_] gets damaged by 15 damage! HP Left = 806/964.
+[Fungus Creature] rolls 202 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 169
+[food_] rolls 180 for AC and reduces the damage by 180! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 805/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 61.81820 > 13.58729].
+[Fungus Creature] rolls 146 for :punch: physical!
+[food_] rolls 227 for AC and reduces the damage by 227! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 804/964.
+[Fungus Creature] rolls 365 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 305
+[food_] rolls 289 for AC and reduces the damage by 289! Damage Left = 16
+[food_] gets damaged by 16 damage! HP Left = 788/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 11 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 788/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 49.99450 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 74.18148 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 12 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 41.77488 > 13.58729].
+[Fungus Creature] rolls 192 for :punch: physical!
+[food_] rolls 259 for AC and reduces the damage by 259! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 787/964.
+[Fungus Creature] rolls 164 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 137
+[food_] rolls 214 for AC and reduces the damage by 214! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 786/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 82.38964 > 13.58729].
+[Fungus Creature] rolls 155 for :punch: physical!
+[food_] rolls 335 for AC and reduces the damage by 335! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 785/964.
+[Fungus Creature] rolls 176 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 147
+[food_] rolls 203 for AC and reduces the damage by 203! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 784/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 13 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 784/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 91.13661 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 16.93642 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 14 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 86.90102 > 13.58729].
+[Fungus Creature] rolls 219 for :punch: physical!
+[food_] rolls 190 for AC and reduces the damage by 190! Damage Left = 29
+[food_] gets damaged by 29 damage! HP Left = 755/964.
+[Fungus Creature] rolls 365 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 305
+[food_] rolls 246 for AC and reduces the damage by 246! Damage Left = 59
+[food_] gets damaged by 59 damage! HP Left = 696/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 51.50553 > 13.58729].
+[Fungus Creature] rolls 129 for :punch: physical!
+[food_] rolls 298 for AC and reduces the damage by 298! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 695/964.
+[Fungus Creature] rolls 386 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 322
+[food_] rolls 264 for AC and reduces the damage by 264! Damage Left = 58
+[food_] gets damaged by 58 damage! HP Left = 637/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 15 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 637/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 93.69468 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 78.04988 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 16 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 58.39949 > 13.58729].
+[Fungus Creature] rolls 217 for :punch: physical!
+[food_] rolls 352 for AC and reduces the damage by 352! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 636/964.
+[Fungus Creature] rolls 297 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 248
+[food_] rolls 220 for AC and reduces the damage by 220! Damage Left = 28
+[food_] gets damaged by 28 damage! HP Left = 608/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 67.98972 > 13.58729].
+[Fungus Creature] rolls 88 for :punch: physical!
+[food_] rolls 265 for AC and reduces the damage by 265! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 607/964.
+[Fungus Creature] rolls 243 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 203
+[food_] rolls 303 for AC and reduces the damage by 303! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 606/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 17 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 606/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 52.41839 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 79.46715 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 18 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 80.44641 > 13.58729].
+[Fungus Creature] rolls 140 for :punch: physical!
+[food_] rolls 196 for AC and reduces the damage by 196! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 605/964.
+[Fungus Creature] rolls 327 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 273
+[food_] rolls 307 for AC and reduces the damage by 307! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 604/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 84.40403 > 13.58729].
+[Fungus Creature] rolls 179 for :punch: physical!
+[food_] rolls 324 for AC and reduces the damage by 324! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 603/964.
+[Fungus Creature] rolls 393 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 328
+[food_] rolls 285 for AC and reduces the damage by 285! Damage Left = 43
+[food_] gets damaged by 43 damage! HP Left = 560/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 19 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 560/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 3.09371 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 92.49772 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 20 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] tries attacking in melee but misses! [evade roll: 0.74752 <= 13.58729]
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 80.71967 > 13.58729].
+[Fungus Creature] rolls 147 for :punch: physical!
+[food_] rolls 356 for AC and reduces the damage by 356! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 559/964.
+[Fungus Creature] rolls 271 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 226
+[food_] rolls 289 for AC and reduces the damage by 289! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 558/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 21 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 558/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 89.44724 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 24.86434 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 22 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 44.44242 > 13.58729].
+[Fungus Creature] rolls 175 for :punch: physical!
+[food_] rolls 279 for AC and reduces the damage by 279! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 557/964.
+[Fungus Creature] rolls 175 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 146
+[food_] rolls 270 for AC and reduces the damage by 270! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 556/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 53.11512 > 13.58729].
+[Fungus Creature] rolls 212 for :punch: physical!
+[food_] rolls 180 for AC and reduces the damage by 180! Damage Left = 32
+[food_] gets damaged by 32 damage! HP Left = 524/964.
+[Fungus Creature] rolls 252 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 210
+[food_] rolls 270 for AC and reduces the damage by 270! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 523/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 23 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 523/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 39.47942 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 36.19162 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 24 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 37.33285 > 13.58729].
+[Fungus Creature] rolls 245 for :punch: physical!
+[food_] rolls 249 for AC and reduces the damage by 249! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 522/964.
+[Fungus Creature] rolls 311 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 260
+[food_] rolls 215 for AC and reduces the damage by 215! Damage Left = 45
+[food_] gets damaged by 45 damage! HP Left = 477/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] tries attacking in melee but misses! [evade roll: 6.28022 <= 13.58729]
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 25 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 477/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 49.24379 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 38.85653 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 26 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 93.58907 > 13.58729].
+[Fungus Creature] rolls 218 for :punch: physical!
+[food_] rolls 183 for AC and reduces the damage by 183! Damage Left = 35
+[food_] gets damaged by 35 damage! HP Left = 442/964.
+[Fungus Creature] rolls 209 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 175
+[food_] rolls 267 for AC and reduces the damage by 267! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 441/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 94.38740 > 13.58729].
+[Fungus Creature] rolls 176 for :punch: physical!
+[food_] rolls 259 for AC and reduces the damage by 259! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 440/964.
+[Fungus Creature] rolls 137 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 115
+[food_] rolls 340 for AC and reduces the damage by 340! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 439/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 27 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 439/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 23.00372 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 37.23041 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 28 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 61.25544 > 13.58729].
+[Fungus Creature] rolls 151 for :punch: physical!
+[food_] rolls 271 for AC and reduces the damage by 271! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 438/964.
+[Fungus Creature] rolls 317 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 265
+[food_] rolls 310 for AC and reduces the damage by 310! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 437/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 83.73834 > 13.58729].
+[Fungus Creature] rolls 84 for :punch: physical!
+[food_] rolls 187 for AC and reduces the damage by 187! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 436/964.
+[Fungus Creature] rolls 348 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 290
+[food_] rolls 200 for AC and reduces the damage by 200! Damage Left = 90
+[food_] gets damaged by 90 damage! HP Left = 346/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 29 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 346/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 34.30866 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 50.12535 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 30 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 2,205/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 35.94431 > 13.58729].
+[Fungus Creature] rolls 126 for :punch: physical!
+[food_] rolls 304 for AC and reduces the damage by 304! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 345/964.
+[Fungus Creature] rolls 407 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 340
+[food_] rolls 205 for AC and reduces the damage by 205! Damage Left = 135
+[food_] gets damaged by 135 damage! HP Left = 210/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 99.70055 > 13.58729].
+[Fungus Creature] rolls 127 for :punch: physical!
+[food_] rolls 247 for AC and reduces the damage by 247! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 209/964.
+[Fungus Creature] rolls 341 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 285
+[food_] rolls 328 for AC and reduces the damage by 328! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 208/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 31 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 208/964. Mana left: 13/13.
+[food_] hits [Fungus Creature] with a melee attack! Applying each damage. [evade roll: 95.08815 > 93.99133].
+[food_] rolls 580 for :punch: physical!
+[Fungus Creature] rolls 27 for AC and reduces the damage by 27! Damage Left = 553
+[Fungus Creature] gets damaged by 553 damage! HP Left = 1,652/2,205.
+[food_] rolls 94 for :green_circle: poison!
+[Fungus Creature] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 79
+[Fungus Creature] rolls 27 for AC and reduces the damage by 27! Damage Left = 52
+[Fungus Creature] gets damaged by 52 damage! HP Left = 1,600/2,205.
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 62.81483 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 32 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 1,600/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 42.58723 > 13.58729].
+[Fungus Creature] rolls 209 for :punch: physical!
+[food_] rolls 220 for AC and reduces the damage by 220! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 207/964.
+[Fungus Creature] rolls 354 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 295
+[food_] rolls 294 for AC and reduces the damage by 294! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 206/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 76.66481 > 13.58729].
+[Fungus Creature] rolls 235 for :punch: physical!
+[food_] rolls 199 for AC and reduces the damage by 199! Damage Left = 36
+[food_] gets damaged by 36 damage! HP Left = 170/964.
+[Fungus Creature] rolls 364 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 304
+[food_] rolls 341 for AC and reduces the damage by 341! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 169/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 33 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 169/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 4.53149 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 33.94752 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 34 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 1,600/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 52.29964 > 13.58729].
+[Fungus Creature] rolls 243 for :punch: physical!
+[food_] rolls 336 for AC and reduces the damage by 336! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 168/964.
+[Fungus Creature] rolls 236 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 197
+[food_] rolls 307 for AC and reduces the damage by 307! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 167/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 59.07898 > 13.58729].
+[Fungus Creature] rolls 83 for :punch: physical!
+[food_] rolls 330 for AC and reduces the damage by 330! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 166/964.
+[Fungus Creature] rolls 158 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 132
+[food_] rolls 357 for AC and reduces the damage by 357! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 165/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 35 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 165/964. Mana left: 13/13.
+[food_] hits [Fungus Creature] with a melee attack! Applying each damage. [evade roll: 94.97399 > 93.99133].
+[food_] rolls 299 for :punch: physical!
+[Fungus Creature] rolls 31 for AC and reduces the damage by 31! Damage Left = 268
+[Fungus Creature] gets damaged by 268 damage! HP Left = 1,332/2,205.
+[food_] rolls 82 for :green_circle: poison!
+[Fungus Creature] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 69
+[Fungus Creature] rolls 26 for AC and reduces the damage by 26! Damage Left = 43
+[Fungus Creature] gets damaged by 43 damage! HP Left = 1,289/2,205.
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 13.37149 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 36 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 1,289/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 70.05859 > 13.58729].
+[Fungus Creature] rolls 244 for :punch: physical!
+[food_] rolls 249 for AC and reduces the damage by 249! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 164/964.
+[Fungus Creature] rolls 366 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 305
+[food_] rolls 323 for AC and reduces the damage by 323! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 163/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 45.12752 > 13.58729].
+[Fungus Creature] rolls 103 for :punch: physical!
+[food_] rolls 296 for AC and reduces the damage by 296! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 162/964.
+[Fungus Creature] rolls 161 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 135
+[food_] rolls 314 for AC and reduces the damage by 314! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 161/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 37 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 161/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 35.49148 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 69.63795 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 38 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 1,289/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 28.98862 > 13.58729].
+[Fungus Creature] rolls 162 for :punch: physical!
+[food_] rolls 251 for AC and reduces the damage by 251! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 160/964.
+[Fungus Creature] rolls 229 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 191
+[food_] rolls 226 for AC and reduces the damage by 226! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 159/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 47.08257 > 13.58729].
+[Fungus Creature] rolls 81 for :punch: physical!
+[food_] rolls 321 for AC and reduces the damage by 321! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 158/964.
+[Fungus Creature] rolls 373 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 311
+[food_] rolls 274 for AC and reduces the damage by 274! Damage Left = 37
+[food_] gets damaged by 37 damage! HP Left = 121/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 39 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 121/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 54.80065 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 36.56709 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 40 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 1,289/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 81.72256 > 13.58729].
+[Fungus Creature] rolls 191 for :punch: physical!
+[food_] rolls 211 for AC and reduces the damage by 211! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 120/964.
+[Fungus Creature] rolls 307 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 256
+[food_] rolls 240 for AC and reduces the damage by 240! Damage Left = 16
+[food_] gets damaged by 16 damage! HP Left = 104/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 49.40393 > 13.58729].
+[Fungus Creature] rolls 153 for :punch: physical!
+[food_] rolls 186 for AC and reduces the damage by 186! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 103/964.
+[Fungus Creature] rolls 191 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 160
+[food_] rolls 333 for AC and reduces the damage by 333! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 102/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 41 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 102/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 23.09351 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 88.00810 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 42 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 1,289/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 75.64683 > 13.58729].
+[Fungus Creature] rolls 170 for :punch: physical!
+[food_] rolls 201 for AC and reduces the damage by 201! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 101/964.
+[Fungus Creature] rolls 238 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 199
+[food_] rolls 195 for AC and reduces the damage by 195! Damage Left = 4
+[food_] gets damaged by 4 damage! HP Left = 97/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 83.79484 > 13.58729].
+[Fungus Creature] rolls 112 for :punch: physical!
+[food_] rolls 321 for AC and reduces the damage by 321! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 96/964.
+[Fungus Creature] rolls 309 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 258
+[food_] rolls 220 for AC and reduces the damage by 220! Damage Left = 38
+[food_] gets damaged by 38 damage! HP Left = 58/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+TURN 43 ------------------------------------------------------------------------------------------
+[food_] gains 1.0 moves. Moves left = 1.0. HP left: 58/964. Mana left: 13/13.
+[food_] tries attacking in melee but misses! [evade roll: 67.01872 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.5.
+[food_] tries attacking in melee but misses! [evade roll: 60.89569 <= 93.99133]
+[food_] uses 0.50 moves! Moves left = 0.0.
+TURN 44 ------------------------------------------------------------------------------------------
+[Fungus Creature] gains 1.0 moves. Moves left = 1.0. HP left: 1,289/2,205. Mana left: 0/0.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 97.47880 > 13.58729].
+[Fungus Creature] rolls 137 for :punch: physical!
+[food_] rolls 345 for AC and reduces the damage by 345! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 57/964.
+[Fungus Creature] rolls 269 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 225
+[food_] rolls 224 for AC and reduces the damage by 224! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 56/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.5.
+[Fungus Creature] hits [food_] with a melee attack! Applying each damage. [evade roll: 54.07026 > 13.58729].
+[Fungus Creature] rolls 241 for :punch: physical!
+[food_] rolls 276 for AC and reduces the damage by 276! Damage Left = 1
+[food_] gets damaged by 1 damage! HP Left = 55/964.
+[Fungus Creature] rolls 342 for :skull: evil!
+[food_] reduces the damage by 16.67% because of their resistance to this element! Damage Left = 285
+[food_] rolls 227 for AC and reduces the damage by 227! Damage Left = 58
+[food_] gets damaged by 58 damage! HP Left = -3/964.
+[Fungus Creature] uses 0.50 moves! Moves left = 0.0.
+[food_] dies!
+[Fungus Creature] wins the fight because [food_] has died!

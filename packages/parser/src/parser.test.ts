@@ -417,6 +417,45 @@ describe('dice insight', () => {
   });
 });
 
+describe('thousands separators (Fungus Creature, XL 63)', () => {
+  // Above 1,000 the log prints numbers as "2,205". Every integer capture must
+  // tolerate the comma or the monster HP track and the biggest hits vanish
+  // into raw beats.
+  const { fight, analysis: a } = load('fungus-creature-loss-xl63.txt');
+
+  it('leaves no line unrecognised', () => {
+    const raw = fight.turns.flatMap((t) => t.beats.filter((b) => b.t === 'raw'));
+    expect(raw).toEqual([]);
+  });
+
+  it('reads comma-separated HP values', () => {
+    expect(fight.maxHp['Fungus Creature']).toBe(2205);
+    const monsterSeries = a.series['Fungus Creature']!;
+    expect(monsterSeries[monsterSeries.length - 1]!.hp).toBe(1289);
+  });
+
+  it('keeps the big hits that land across the 1,000 boundary', () => {
+    // Turn 31: 553 physical + 52 poison, reported as "HP Left = 1,652/2,205".
+    const by = Object.fromEntries(a.turnDamage.map((t) => [t.turn, t.dealt]));
+    expect(by[31]!['food_']).toBe(605);
+    expect(a.stats['food_']!.dealt).toBe(916);
+  });
+
+  it('handles two attacks per turn at attack speed 0.5', () => {
+    expect(a.stats['food_']!.attacks).toBe(38);
+    expect(a.stats['Fungus Creature']!.attacks).toBe(38);
+    expect(a.stats['Fungus Creature']!.hits).toBe(36);
+  });
+
+  it('shows the fight was an accuracy check, not a damage check', () => {
+    // EV 94 gives roughly a 6% hit chance; 38 swings expect 2.28 hits.
+    expect(a.luck['food_']!.expectedHits).toBeCloseTo(2.28, 2);
+    expect(a.stats['food_']!.hits).toBe(2);
+    expect(a.playerMitigation.taken).toBe(967);
+    expect(fight.outcome.loser).toBe('food_');
+  });
+});
+
 describe('exportFights', () => {
   it('exports one entry per fight with fight, analysis and insights', () => {
     const out = exportFights(read('two-fights-one-paste.txt'), 'pair.txt');
