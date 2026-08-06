@@ -120,7 +120,9 @@ export function App() {
     }
 
     let cancelled = false;
-    decodeLog(frag.encoded)
+    // The whole fragment, not just the payload: it carries which codec the bot
+    // chose. A `b1` link lazily fetches the brotli decoder; `g1` never does.
+    decodeLog(frag)
       .then((text) => {
         // load() already reports a decoded payload that is not a fight log,
         // reusing the parser's own wording.

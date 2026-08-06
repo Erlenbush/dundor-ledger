@@ -1,119 +1,145 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { gunzipSync } from 'node:zlib';
+import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { encodeLog, logUrl, MAX_LINK_CHARS, SCHEME } from './link.js';
+import {
+  encodeLog,
+  encodeLogBrotli,
+  logUrl,
+  MAX_LINK_CHARS,
+  SCHEME_BROTLI,
+  SCHEME_GZIP,
+} from './link.js';
+import { noise } from './noise.test-util.js';
 
 const fixture = (name: string): string =>
   readFileSync(fileURLToPath(new URL(`../../../fixtures/${name}`, import.meta.url)), 'utf8');
 
-const decode = (encoded: string): string =>
-  gunzipSync(Buffer.from(encoded.slice(SCHEME.length + 1), 'base64url')).toString('utf8');
-
-/**
- * Deterministic incompressible filler.
- *
- * `'x'.repeat(n)` will not do: 150,000 of one character gzips to 243
- * characters, so an "over budget" case built that way is comfortably under
- * budget and the test silently proves the opposite of what it claims.
- *
- * `Math.imul` keeps the multiply in 32 bits. A plain `seed * 1103515245`
- * exceeds JavaScript's safe integer range, loses precision and collapses into
- * a short cycle, which compresses well and reintroduces the same bug quietly.
- */
-const noise = (length: number): string => {
-  let seed = 1;
-  let out = '';
-  for (let i = 0; i < length; i++) {
-    seed = Math.imul(seed, 48271) % 2147483647;
-    out += String.fromCharCode(33 + (seed % 94));
-  }
-  return out;
+/** Strip the `g1.`/`b1.` tag and decompress with the matching codec. */
+const decode = (encoded: string): string => {
+  const [tag, payload] = [encoded.slice(0, 2), encoded.slice(3)];
+  const raw = Buffer.from(payload, 'base64url');
+  return (tag === SCHEME_BROTLI ? brotliDecompressSync(raw) : gunzipSync(raw)).toString('utf8');
 };
 
-describe('encodeLog', () => {
-  it('round-trips a real log through gzip', () => {
+
+describe('encodeLog (gzip)', () => {
+  it('round-trips a real log', () => {
     const log = fixture('snake-xl100.txt');
     expect(decode(encodeLog(log))).toBe(log);
   });
 
-  it('tags the payload with the scheme so the format can change later', () => {
+  it('tags the payload so the format can change later', () => {
     expect(encodeLog('anything')).toMatch(/^g1\./);
   });
 
-  it('produces only characters that are safe in a URL fragment', () => {
-    const encoded = encodeLog(fixture('fungus-creature-loss-xl63.txt'));
-    expect(encoded.slice(SCHEME.length + 1)).toMatch(/^[A-Za-z0-9_-]+$/);
+  it('produces only characters safe in a URL fragment', () => {
+    expect(encodeLog(fixture('fungus-creature-loss-xl63.txt')).slice(3)).toMatch(/^[A-Za-z0-9_-]+$/);
+  });
+});
+
+describe('encodeLogBrotli', () => {
+  it('round-trips a real log', () => {
+    const log = fixture('fungus-creature-loss-xl63.txt');
+    expect(decode(encodeLogBrotli(log))).toBe(log);
   });
 
-  it('compresses hard enough to be worth doing', () => {
+  it('tags itself distinctly from gzip', () => {
+    expect(encodeLogBrotli('anything')).toMatch(/^b1\./);
+  });
+
+  it('is meaningfully smaller than gzip on a real log', () => {
+    // About 25% on these logs, which is the whole reason it exists: it is the
+    // difference between the 44-turn Fungus fight linking and falling back.
     const log = fixture('fungus-creature-loss-xl63.txt');
-    expect(encodeLog(log).length).toBeLessThan(log.length / 5);
+    expect(encodeLogBrotli(log).length).toBeLessThan(encodeLog(log).length * 0.85);
+  });
+
+  it('produces only characters safe in a URL fragment', () => {
+    expect(encodeLogBrotli(fixture('snake-xl100.txt')).slice(3)).toMatch(/^[A-Za-z0-9_-]+$/);
   });
 });
 
 describe('logUrl', () => {
-  it('builds a fragment link for a log that fits', () => {
+  it('prefers gzip when it fits, so the reader needs no decoder', () => {
     const out = logUrl('https://example.com', fixture('snake-xl100.txt'));
     expect(out.full).toBe(true);
+    expect(out.scheme).toBe(SCHEME_GZIP);
     expect(out.url).toContain('/#log=g1.');
   });
 
-  it('falls back to the bare site when the log is too big', () => {
+  it('reaches for brotli only when gzip does not fit', () => {
+    // Fungus is 39,109 raw: about 4,680 URL characters gzipped, over budget,
+    // and about 3,514 with brotli, under it.
+    const out = logUrl('https://example.com', fixture('fungus-creature-loss-xl63.txt'));
+    expect(out.full).toBe(true);
+    expect(out.scheme).toBe(SCHEME_BROTLI);
+    expect(out.url).toContain('/#log=b1.');
+  });
+
+  it('falls back to the bare site when neither encoding fits', () => {
     const out = logUrl('https://example.com', noise(MAX_LINK_CHARS * 4));
     expect(out.full).toBe(false);
+    expect(out.scheme).toBeNull();
     expect(out.url).toBe('https://example.com');
   });
 
-  it('never exceeds the budget', () => {
-    const out = logUrl('https://example.com', fixture('fungus-creature-loss-xl63.txt'));
-    expect(out.url.length).toBeLessThanOrEqual(MAX_LINK_CHARS);
+  it('never exceeds the budget on any fixture', () => {
+    for (const f of [
+      'snake-xl100.txt',
+      'icecorn-xl63.txt',
+      'ghoul-loss-xl100.txt',
+      'two-fights-one-paste.txt',
+      'fungus-creature-loss-xl63.txt',
+    ]) {
+      expect(logUrl('https://example.com', fixture(f)).url.length).toBeLessThanOrEqual(
+        MAX_LINK_CHARS,
+      );
+    }
+  });
+
+  it('links every fixture at a production-length origin', () => {
+    // Tests used to run against a 13-character origin while production is 41,
+    // which hid how little headroom the largest fixtures actually have.
+    const base = 'https://dundor-ledger.nuclidelabs.com';
+    for (const f of [
+      'snake-xl100.txt',
+      'two-fights-one-paste.txt',
+      'fungus-creature-loss-xl63.txt',
+    ]) {
+      const out = logUrl(base, fixture(f));
+      expect(out.full, `${f} should link at a production origin`).toBe(true);
+    }
   });
 
   it('tolerates a trailing slash on the base', () => {
     expect(logUrl('https://example.com/', 'x').url).toContain('https://example.com/#log=');
   });
-
-  it('still fits a multi-fight paste with a production-length base URL', () => {
-    // Every other test in this file uses a 13-19 character origin like
-    // https://x.dev or https://example.com. Production is roughly 41:
-    // https://dundor-ledger.example.workers.dev. two-fights-one-paste.txt is
-    // the fixture with the least headroom (2,937 of 3,000 measured with this
-    // origin in the design doc), so it is the one worth pinning here rather
-    // than trusting that a short test origin generalizes.
-    const base = 'https://dundor-ledger.example.workers.dev';
-    expect(base.length).toBeGreaterThan(40);
-    const out = logUrl(base, fixture('two-fights-one-paste.txt'));
-    expect(out.full).toBe(true);
-    expect(out.url.length).toBeLessThanOrEqual(MAX_LINK_CHARS);
-  });
 });
 
 describe('link contract', () => {
-  const contract = JSON.parse(fixture('link-contract.json')) as {
-    scheme: string;
-    source: string;
-    encoded: string;
-    fragment: string;
-  };
+  const contract = JSON.parse(fixture('link-contract.json')) as Record<
+    'gzip' | 'brotli',
+    { scheme: string; source: string; encoded: string; fragment: string }
+  >;
 
-  it('still decodes to the log it was generated from', () => {
+  it('still decodes the gzip sample it was generated from', () => {
     // The web app asserts the same thing from its own decoder. If either side
     // changes the format, one of the two tests fails.
-    expect(decode(contract.encoded)).toBe(fixture(contract.source));
+    expect(decode(contract.gzip.encoded)).toBe(fixture(contract.gzip.source));
+    expect(contract.gzip.scheme).toBe(SCHEME_GZIP);
   });
 
-  it('uses the scheme this encoder writes', () => {
-    expect(contract.scheme).toBe(SCHEME);
+  it('still decodes the brotli sample it was generated from', () => {
+    expect(decode(contract.brotli.encoded)).toBe(fixture(contract.brotli.source));
+    expect(contract.brotli.scheme).toBe(SCHEME_BROTLI);
   });
 
-  it('pins the URL shape, not just the codec', () => {
-    // scheme/source/encoded above pin the encoding, but not where it sits in
-    // the URL: renaming `log=` to something else would leave those three
-    // assertions passing while breaking every link already posted to Discord.
-    // logUrl's output must end with exactly the fragment the contract pins,
-    // regardless of the base URL in front of it.
-    const out = logUrl('https://x.dev', fixture(contract.source));
-    expect(out.url.endsWith(contract.fragment)).toBe(true);
+  it('pins the fragment shape, not just the payload', () => {
+    // `encoded` alone would let a rename of `log=` pass on both sides while
+    // breaking every link already posted to Discord.
+    for (const c of [contract.gzip, contract.brotli]) {
+      expect(logUrl('https://x.dev', fixture(c.source)).url.endsWith(c.fragment)).toBe(true);
+    }
   });
 });

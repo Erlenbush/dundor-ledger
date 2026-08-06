@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { DiscordAPIError } from 'discord.js';
 import { exportFights, type ExportedFight } from '@dundor/parser';
 import { buildReply, sendReply } from './reply.js';
+import { noise } from './noise.test-util.js';
 
 const fixture = (name: string): string =>
   readFileSync(fileURLToPath(new URL(`../../../fixtures/${name}`, import.meta.url)), 'utf8');
@@ -66,13 +67,13 @@ describe('buildReply', () => {
 
   it('points at the bare site, says so, and uses the fallback label when the fight is too long', () => {
     const { fights } = fightsIn('snake-xl100.txt');
-    // The 44-turn Fungus log encodes to about 4,634 characters, over the
-    // default MAX_LINK_CHARS of 3,000. If the probe raises that constant above
-    // 4,634 this test starts failing, which is the correct signal to update it.
+    // Synthetic noise, not a real fixture: brotli brings every real log --
+    // including the 44-turn Fungus fight -- inside the budget, so no fixture
+    // exercises the fallback any more.
     const draft = buildReply({
       fights,
       problems: [],
-      logText: fixture('fungus-creature-loss-xl63.txt'),
+      logText: noise(60_000),
       webUrl: 'https://x.dev',
     });
     expect(link(draft)!.url).toBe('https://x.dev');
@@ -110,7 +111,7 @@ describe('buildReply', () => {
     const draft = buildReply({
       fights,
       problems: [],
-      logText: fixture('fungus-creature-loss-xl63.txt'),
+      logText: noise(60_000),
       webUrl: 'https://x.dev',
     });
     expect(draft.content).toContain('too long to link');
