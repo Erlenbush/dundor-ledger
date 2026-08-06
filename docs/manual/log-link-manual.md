@@ -1,22 +1,23 @@
-# Log link button — manual steps
+# Log link — manual steps
 
 Companion to `docs/superpowers/specs/2026-08-05-log-link-design.md`. Covers only
-the steps that cannot be scripted: the interactive Cloudflare login, the Discord
-probe, and the environment variable on bespin.
+the steps that cannot be scripted: the interactive Cloudflare login, the
+environment variable on bespin, and re-measuring Discord's limits if they move.
 
 **Live as of 2026-08-05.** The web app is published at
 <https://dundor-ledger.nuclidelabs.com> and `LEDGER_WEB_URL` is set on bespin,
-so replies carry the button. What follows is the record of how it was turned
-on, and what to do if it needs redoing.
+so replies carry an "Open full breakdown" link. Every fixture links, including
+the 44-turn Fungus fight. What follows is the record of how it was turned on and
+what to do if it needs redoing.
 
-`MAX_LINK_CHARS` is still the unmeasured guess of 3,000. Every fixture except
-the 44-turn Fungus log fits inside it at the production origin. The private
-test channel is serving as the probe: if buttons appear, the ceiling is at
-least ~2,950.
+The reply carries a **markdown link in the embed description**, not a link
+button. Buttons cap their `url` at 512 characters and the smallest real log
+needs about 1,545, so a button could never carry one. See the spec's "Measured
+Discord limits".
 
-The feature ships dark: with `LEDGER_WEB_URL` unset there is no button and the
-bot behaves exactly as it does today. Do these steps in order, and stop at any
-point without leaving things broken.
+The feature is inert with `LEDGER_WEB_URL` unset: no link, and the bot behaves
+exactly as it did before. Do these steps in order, and stop at any point
+without leaving things broken.
 
 ## 1. Publish the web app
 
@@ -45,57 +46,66 @@ Use any fixture, e.g. `fixtures/snake-xl100.txt`. This must work before the
 button is worth wiring up, because every failure path falls back to exactly
 this.
 
-## 2. Find Discord's component URL ceiling
+## 2. Discord's limits (already measured)
 
-Discord does not document a maximum length for a link button's URL, and
-`discord.js` does not enforce one. The probe finds it empirically.
+Measured on 2026-08-05 against the live API:
 
-- [ ] Create or pick a **private channel of your own** ⏫
+| Vehicle | Limit |
+| --- | --- |
+| Link button `url` | 512 |
+| Embed `url` (clickable title) | 2,048 |
+| Embed description | at least 4,000 (cap 4,096) |
+| Whole embed | 6,000 |
 
-Not Pearguson's server. The probe posts several throwaway messages.
-
-Only needed if buttons stop appearing, or before raising `MAX_LINK_CHARS` to
-cover longer fights. Ordinary logs already fit the current budget.
-
-- [ ] Get the channel ID
-
-Enable Developer Mode in Discord settings (User Settings, Advanced), then right
-click the channel and Copy Channel ID.
-
-- [ ] Run the probe
+**You do not need to re-run the probe** unless links stop appearing or you want
+to check whether Discord has moved these. If you do:
 
 ```bash
-cd ~/dundor-ledger
-DISCORD_TOKEN=<your bot token> node scripts/probe-button-url.mjs <channel id>
+ssh bespin
+set -a; . /home/dundor/dundor-ledger/apps/bot/.env; set +a
+cd /home/dundor/dundor-ledger && node scripts/probe-button-url.mjs <channel id>
+unset DISCORD_TOKEN
 ```
 
-It posts buttons at increasing URL lengths and prints the largest that Discord
-accepted.
+Point it at a private channel of your own. It posts throwaway messages and
+deletes them, naming any it could not remove. Note it probes the *button*
+ceiling specifically, which is no longer the vehicle the bot uses.
 
-- [ ] Record the number, then delete the probe messages
-
-## 3. Set the budget constant
-
-- [ ] Put the measured ceiling into `apps/bot/src/link.ts`, minus a safety margin
-
-Leave headroom rather than sitting exactly on the limit. If the constant is
-wrong the bot retries without the button, so a fight loses its link but the
-analysis still posts. That backstop is not a reason to skip the margin.
-
-Raising `MAX_LINK_CHARS` above roughly 4,690 is expected to fail
-`apps/bot/src/reply.test.ts` — one of its tests pins the Fungus fixture as an
-example of a fight that does *not* fit, and says so in its own comment. That
-failure is the correct signal to update the test's expectation, not a sign
-the new constant is wrong.
-
-- [ ] Run the tests and deploy
+To get a channel ID without leaving your desk, ask the bot what it can see
+rather than hunting through Discord's UI:
 
 ```bash
-npm test
-./deploy/deploy-bot.sh
+ssh bespin
+set -a; . /home/dundor/dundor-ledger/apps/bot/.env; set +a
+node -e 'const h={authorization:`Bot ${process.env.DISCORD_TOKEN}`};(async()=>{
+  for (const g of await (await fetch("https://discord.com/api/v10/users/@me/guilds",{headers:h})).json()) {
+    console.log(g.name);
+    for (const c of (await (await fetch(`https://discord.com/api/v10/guilds/${g.id}/channels`,{headers:h})).json()).filter(c=>c.type===0))
+      console.log("  #"+c.name, c.id);
+  }})()'
+unset DISCORD_TOKEN
 ```
 
-## 4. Turn the button on
+## 3. The budget constant (already set)
+
+`MAX_LINK_CHARS` in `apps/bot/src/link.ts` is **3,700** — under the 4,096
+description cap with room for the summary lines and markdown syntax sharing it,
+and under the 6,000 whole-embed cap alongside the insight fields.
+
+Two encodings share that budget. gzip is tried first because browsers decode it
+natively; brotli is used only when gzip does not fit, because it costs the
+reader a ~204 KB decoder:
+
+| Encoding | Largest raw log that fits |
+| --- | --- |
+| gzip (`g1`) | ~31,000 characters |
+| brotli (`b1`) | ~44,000 characters |
+
+Raising this constant is not free: it eats the headroom the insight fields need
+inside the 6,000 total. `apps/bot/src/reply.test.ts` asserts both caps, so if
+you raise it and those tests fail, the tests are right.
+
+## 4. Turn the link on
 
 - [ ] Add the URL to the bot's environment on bespin ⏫
 
@@ -146,22 +156,29 @@ has been since it was added, so this closes both gaps at once.
 
 ## 5. Verify
 
-- [ ] Upload a small log and confirm the button appears
+- [ ] Upload a small log and confirm the link appears
 
-`fixtures/snake-xl100.txt` encodes to roughly 1,500 characters, well inside any
-plausible limit.
+`fixtures/snake-xl100.txt` encodes to about 1,541 URL characters as a `g1`
+gzip link. Nothing extra is downloaded when it is opened.
 
 - [ ] Click it and confirm the fight opens with charts
 
-- [ ] Upload the largest fixture and confirm the oversized path
+- [ ] Upload `fixtures/fungus-creature-loss-xl63.txt` and confirm the brotli path ⏫
 
-`fixtures/fungus-creature-loss-xl63.txt` encodes to roughly 4,634 characters. If
-that is over your measured ceiling, the button should point at the bare site and
-the embed should say the fight was too long to link directly. Either outcome is
-correct; what must not happen is a missing reply.
+39,109 raw characters, too large for gzip, so this produces a `b1` link at
+about 3,514 characters. Opening it fetches the ~204 KB WebAssembly decoder
+once. If this one shows "too long to link directly" instead, brotli is not
+being reached.
 
 - [ ] Upload `fixtures/two-fights-one-paste.txt` and confirm the browser shows
       both fights, not just the embed's first three
+
+- [ ] Confirm a broken link is obvious, not silent
+
+Open `https://dundor-ledger.nuclidelabs.com/#log=g9.AAAA` in a **fresh tab**.
+Expect a red "This link didn't open" banner above the drop zone. A fragment-only
+change does not reload the page, so reusing a tab will show the previous fight
+and look like a failure that isn't one.
 
 ## Rolling back
 
@@ -186,7 +203,8 @@ nothing else changes.
   enabled.
 
 - The links do not expire — they are self-contained and keep working as long
-  as the site is published. This is not the safety property it sounds like: a
+  as the site is published, and old `g1` links keep working now that `b1`
+  exists, which is what the scheme tag is for. This is not the safety property it sounds like: a
   Discord attachment's *signed URL* lapses after about a day, but the
   attachment's underlying data does not expire either, so this is not a
   meaningful difference from what Discord already does. Framing it as a

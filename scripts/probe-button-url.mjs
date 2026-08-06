@@ -2,8 +2,13 @@
 /**
  * Find the longest link-button URL Discord will accept.
  *
- * Discord does not document a ceiling and discord.js does not enforce one, so
- * MAX_LINK_CHARS in apps/bot/src/link.ts is a guess until this measures it.
+ * ANSWERED 2026-08-05: 512 characters ("Must be 512 or fewer in length"). The
+ * smallest real log needs about 1,545, so a link button can never carry one.
+ * The bot puts the log in a markdown link in the embed description instead,
+ * which accepts at least 4,000.
+ *
+ * Kept because it is the tool for re-measuring if Discord moves that ceiling,
+ * but note it probes the BUTTON limit, which is no longer the vehicle in use.
  *
  * Posts throwaway messages. Point it at a private channel of your own, not at
  * anyone else's server, and delete them afterwards.
